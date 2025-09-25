@@ -1,4 +1,5 @@
 import sys, os
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from fastapi import FastAPI, Depends
@@ -7,7 +8,9 @@ from sqlalchemy.orm import Session
 from app.database import get_db, Base, engine
 from sqlalchemy import text
 
-Base.metadata.create_all(bind=engine)
+# Only create tables when not testing
+if os.getenv("TESTING") != "true":
+    Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Easy Kitchen API")
 
