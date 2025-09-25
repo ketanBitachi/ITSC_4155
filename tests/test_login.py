@@ -1,7 +1,7 @@
 import pytest
 
 # =========================================
-# Placeholder tests for User Authentication (#31, #34) Bita's portion
+# Placeholder tests for User Authentication : Bita's portion
 # =========================================
 
 def test_valid_login():
