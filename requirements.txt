@@ -6,6 +6,6 @@ pytest>=8.3
 pytest-mock>=3.14
 httpx>=0.27
 cryptography>=42.0
-python-dotenv>=1.0s
+python-dotenv>=1.0
 PyJWT
 passlib[ar]

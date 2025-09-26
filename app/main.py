@@ -10,7 +10,6 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from jose import JWTError
-
 from app.database import get_db, engine
 from app import models, schema
 from app.models import User
