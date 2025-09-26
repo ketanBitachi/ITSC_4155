@@ -165,3 +165,7 @@ cython_debug/
 # DO NOT add `api/dependencies/config.py` here if it's already tracked.
     # To make it Untrack use cmd - git update-index --assume-unchanged api/dependencies/config.py
     # To "UNDO Untrack" use cmd - git update-index --no-assume-unchanged api/dependencies/config.py
+
+# node / react
+node_modules
+frontend/build/
