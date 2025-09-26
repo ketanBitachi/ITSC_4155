@@ -2,17 +2,24 @@ import sys, os
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from app.database import get_db, Base, engine
 from sqlalchemy import text
-
-# Only create tables when not testing
-if os.getenv("TESTING") != "true":
-    Base.metadata.create_all(bind=engine)
+from sqlalchemy.exc import IntegrityError
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from jose import JWTError
 
 app = FastAPI(title="Easy Kitchen API")
+
+auth_scheme = HTTPBearer()
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(auth_scheme)):
+    token = credentials.credentials
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    return payload
 
 app.add_middleware(
     CORSMiddleware,
