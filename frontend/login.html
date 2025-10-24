@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Kitchen - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style1.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="shell">
+            <div class="brand">🥗 Easy <span>Kitchen</span></div>
+            <nav class="top-nav">
+                <button class="link" onclick="window.location.href='index.html'">Home</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="shell">
+        <!-- Login Panel -->
+        <section id="login" class="panel active">
+            <div class="card narrow">
+                <h2>Login</h2>
+                <form id="loginForm" class="form">
+                    <div id="loginError" class="error-message"></div>
+                    <label>Email
+                        <input type="email" name="email" placeholder="you@example.com" required>
+                    </label>
+                    <label>Password
+                        <input type="password" name="password" placeholder="••••••••" required minlength="6">
+                    </label>
+                    <button class="btn primary" type="submit">Login</button>
+                    <p class="muted small">No account?
+                        <button type="button" class="link" onclick="showSignup()">Create one</button>
+                    </p>
+                </form>
+            </div>
+        </section>
+
+        <!-- Sign-Up Panel -->
+        <section id="signup" class="panel">
+            <div class="card narrow">
+                <h2>Sign Up</h2>
+                <form id="signupForm" class="form">
+                    <div id="signupError" class="error-message"></div>
+                    <label>Username
+                        <input type="text" name="username" placeholder="Your Name" required>
+                    </label>
+                    <label>Email
+                        <input type="email" name="email" placeholder="you@example.com" required>
+                    </label>
+                    <label>Password
+                        <input type="password" name="password" placeholder="Create a password" required minlength="6">
+                    </label>
+                    <label>Confirm Password
+                        <input type="password" name="confirm" placeholder="Re-enter password" required minlength="6">
+                    </label>
+                    <button class="btn primary" type="submit">Register</button>
+                    <p class="muted small">Already registered?
+                        <button type="button" class="link" onclick="showLogin()">Log in</button>
+                    </p>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="shell">
+            <small>&copy; <span id="year"></span> Easy Kitchen</small>
+        </div>
+    </footer>
+
+    <!-- Add config.js before auth.js -->
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        
+        function showLogin() {
+            document.getElementById('login').classList.add('active');
+            document.getElementById('signup').classList.remove('active');
+        }
+        
+        function showSignup() {
+            document.getElementById('signup').classList.add('active');
+            document.getElementById('login').classList.remove('active');
+        }
+
+        // Check if already logged in
+        if (localStorage.getItem('authToken')) {
+            window.location.href = 'ingredients.html';
+        }
+    </script>
+</body>
+</html>

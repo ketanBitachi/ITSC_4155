@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Kitchen - Welcome</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style1.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="shell">
+            <div class="brand">🥗 Easy <span>Kitchen</span></div>
+            <nav class="top-nav">
+                <button class="link" onclick="window.location.href='index.html'">Home</button>
+                <button class="link" onclick="window.location.href='login.html'">Login</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="shell">
+        <section class="panel active">
+            <div class="card center">
+                <h1>Welcome to Easy Kitchen</h1>
+                <p class="subtitle">Plan meals from what's already in your kitchen.</p>
+                <ul style="text-align: left; max-width: 500px; margin: 20px auto;">
+                    <li>Track ingredients in your pantry</li>
+                    <li>Find recipes based on what you have</li>
+                    <li>Discover new meal ideas</li>
+                    <li>Save your favorite ingredients</li>
+                </ul>
+                <div class="actions">
+                    <button class="btn primary" onclick="window.location.href='login.html'">Get Started</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="shell">
+            <small>&copy; <span id="year"></span> Easy Kitchen</small>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        
+        // Check if user is already logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('authToken');
+            const expiry = localStorage.getItem('tokenExpiry');
+            
+            if (token && expiry && new Date() < new Date(expiry)) {
+                window.location.href = 'ingredients.html';
+            }
+        });
+    </script>
+</body>
+</html>
