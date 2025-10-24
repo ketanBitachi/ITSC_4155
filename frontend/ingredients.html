@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Kitchen - My Pantry</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style1.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="shell">
+            <div class="brand">🥗 Easy <span>Kitchen</span></div>
+            <nav class="top-nav">
+                <button class="link" id="homeBtn">Home</button>
+                <button class="link" id="pantryBtn">My Pantry</button>
+                <button class="link" id="logoutBtn">Logout</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="shell">
+        <!-- Ingredients Selection Panel -->
+        <section id="ingredients" class="panel active">
+            <div class="card">
+                <h2>My Pantry</h2>
+                <p class="subtitle">Select the ingredients you have available</p>
+
+                <div class="toolbar">
+                    <input id="searchInput" type="text" placeholder="Search ingredients...">
+                    <button class="btn" id="loadIngredientsBtn">Load All Ingredients</button>
+                </div>
+
+                <div id="selectedIngredientsSection" class="selected-ingredients" style="display:none;">
+                    <h3>Selected Ingredients</h3>
+                    <div id="selectedChips" class="chip-row"></div>
+                </div>
+
+                <div id="ingredientsList" class="accordion">
+                    <p class="muted">Click "Load All Ingredients" to see available ingredients</p>
+                </div>
+
+                <div class="actions end">
+                    <button class="btn outline" id="savePantryBtn">Save My Pantry</button>
+                    <button class="btn primary" id="findRecipesBtn">Find Recipes</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recipes Panel -->
+        <section id="recipes" class="panel">
+            <div class="card">
+                <h2>Recipe Suggestions</h2>
+                <p class="subtitle">Based on your selected ingredients</p>
+                
+                <div id="recipeResults" class="recipe-grid">
+                    <p class="loading">Loading recipes...</p>
+                </div>
+                
+                <div class="actions">
+                    <button class="btn outline" id="backToIngredientsBtn">Back to My Pantry</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Recipe Detail Modal -->
+    <div id="recipeModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="recipeDetails">
+                <!-- Recipe details will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="shell">
+            <small>&copy; <span id="year"></span> Easy Kitchen</small>
+        </div>
+    </footer>
+    
+    <!-- Add config.js before auth.js -->
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+    <script src="api.js"></script>
+    <script src="ingredients.js"></script>
+</body>
+</html>
