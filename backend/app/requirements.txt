@@ -24,3 +24,6 @@ argon2-cffi==23.1.0
 # PyJWT
 # passlib
 # argon2-cffi
+# httpx
+# pytest pytest-asyncio httpx
+# "httpx<0.25"
