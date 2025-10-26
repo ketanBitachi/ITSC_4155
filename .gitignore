@@ -25,14 +25,14 @@ build/
 pip-wheel-metadata/
 
 # ---- FastAPI backend ----
-# backend/.env
+backend/.env
 backend/__pycache__/
 backend/venv/
 backend/.pytest_cache/
 
 # ---- Frontend ----
 node_modules/
-# frontend/config.js
+frontend/config.js
 *.cache/
 *.parcel-cache/
 *.map
