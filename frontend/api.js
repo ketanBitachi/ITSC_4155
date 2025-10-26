@@ -165,3 +165,14 @@ async function getRecipeDetails(recipeId) {
         throw error;
     }
 }
+
+// ---- expose functions to window for tests / non-module script usage ----
+if (typeof window !== "undefined") {
+  window.getUserIngredients = getUserIngredients;
+  window.addIngredient = addIngredient;
+  window.removeIngredient = removeIngredient;
+
+  window.getAllIngredientsFromMealDB = getAllIngredientsFromMealDB;
+  window.searchRecipesByIngredients = searchRecipesByIngredients;
+  window.getRecipeDetails = getRecipeDetails;
+}

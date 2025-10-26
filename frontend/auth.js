@@ -170,3 +170,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// ---- expose functions to window for tests / non-module script usage ----
+if (typeof window !== "undefined") {
+  window.checkAuthStatus = checkAuthStatus;
+  window.registerUser = registerUser;
+  window.loginUser = loginUser;
+  window.logoutUser = logoutUser;
+  window.getAuthHeaders = getAuthHeaders;
+}
