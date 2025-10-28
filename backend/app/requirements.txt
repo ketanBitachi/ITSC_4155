@@ -14,7 +14,7 @@ pytest-mock
 httpx
 pytest
 python-dotenv>=1.0
-pytest pytest-asyncio httpx
+pytest-asyncio
 
 # Old:
 # fastapi>=0.115.0
