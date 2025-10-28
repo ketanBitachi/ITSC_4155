@@ -15,6 +15,10 @@ httpx
 pytest
 python-dotenv>=1.0
 pytest-asyncio
+httpx
+pytest pytest-asyncio httpx
+"httpx<0.25"
+pytest-cov
 
 # Old:
 # fastapi>=0.115.0
