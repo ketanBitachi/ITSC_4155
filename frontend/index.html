@@ -31,6 +31,8 @@
                 </ul>
                 <div class="actions">
                     <button class="btn primary" onclick="window.location.href='login.html'">Get Started</button>
+                    <a href="ingredients.html#groceries" class="btn outline">View My Grocery List</a>
+
                 </div>
             </div>
         </section>
@@ -45,15 +47,37 @@
     <script>
         document.getElementById('year').textContent = new Date().getFullYear();
         
-        // Check if user is already logged in
         document.addEventListener('DOMContentLoaded', function() {
-            const token = localStorage.getItem('authToken');
-            const expiry = localStorage.getItem('tokenExpiry');
-            
-            if (token && expiry && new Date() < new Date(expiry)) {
-                window.location.href = 'ingredients.html';
+          const token = localStorage.getItem('authToken');
+          const expiry = localStorage.getItem('tokenExpiry');
+          const savedGroceryList = JSON.parse(localStorage.getItem("currentMissingIngredients") || "[]");
+        
+          const actions = document.querySelector('.actions');
+        
+          // ✅ If user is logged in and has a saved grocery list
+          if (token && expiry && new Date() < new Date(expiry)) {
+            if (savedGroceryList.length > 0) {
+              // show grocery list link instead of Get Started
+              const groceryLink = document.createElement('a');
+              groceryLink.href = 'ingredients.html#groceries';
+              groceryLink.className = 'btn primary';
+              groceryLink.textContent = 'View My Grocery List';
+              actions.innerHTML = ''; // remove the Get Started button
+              actions.appendChild(groceryLink);
+            } else {
+              // fallback to pantry
+              const pantryLink = document.createElement('a');
+              pantryLink.href = 'ingredients.html';
+              pantryLink.className = 'btn primary';
+              pantryLink.textContent = 'Go to My Pantry';
+              actions.innerHTML = '';
+              actions.appendChild(pantryLink);
             }
+          }
         });
-    </script>
+        </script>
+        
+        
+        
 </body>
 </html>

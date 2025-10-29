@@ -59,9 +59,25 @@
                 
                 <div class="actions">
                     <button class="btn outline" id="backToIngredientsBtn">Back to My Pantry</button>
+                    <button class="btn primary" id="goToGroceryBtn">Generate Grocery List</button>
                 </div>
             </div>
         </section>
+                <!-- Grocery List Panel -->
+        <section id="groceryListSection" class="panel">
+            <div class="card">
+                <h2>🛒 Grocery List</h2>
+                <p>Missing ingredients based on your selected recipes:</p>
+                <div id="groceryList" class="list-container"></div>
+                <div class="actions">
+                    <button class="btn outline" onclick="window.location.href='index.html'">Back to Home</button>
+                    <button id="generateListBtn" class="btn primary">Generate Grocery List</button>
+                    <button id="saveListBtn" class="btn">Save List</button>
+                    <button id="exportListBtn" class="btn outline">Export to PDF</button>
+                </div>
+                </div>
+        </section>
+          
     </main>
 
     <!-- Recipe Detail Modal -->
@@ -80,10 +96,16 @@
         </div>
     </footer>
     
-    <!-- Add config.js before auth.js -->
+    <!-- Config and app scripts -->
     <script src="config.js"></script>
     <script src="auth.js"></script>
     <script src="api.js"></script>
     <script src="ingredients.js"></script>
+
+    <!-- Load jsPDF before grocerylist.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="grocerylist.js"></script>
+
+
 </body>
 </html>
