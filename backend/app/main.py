@@ -39,6 +39,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base, test_connection
 from .routers import auth_router, pantry_router
+from .routers import grocery_list  # import grocery list router
 from .config import settings
 
 # Create database tables
@@ -69,6 +70,8 @@ app.add_middleware(
 # Include routers
 app.include_router(auth_router)
 app.include_router(pantry_router)
+app.include_router(grocery_list.router)
+
 
 @app.get("/")
 def read_root():
