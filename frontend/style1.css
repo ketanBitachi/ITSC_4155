@@ -225,6 +225,45 @@ p.subtitle {
 }
 
 /* ===============================
+   Filter Controls
+   =============================== */
+.filter-controls {
+  margin: 16px 0;
+}
+
+.filter-controls label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-br);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover {
+  border-color: var(--primary);
+}
+
+.filter-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* ===============================
    Recipe Cards and Grid
    =============================== */
 .recipe-grid {

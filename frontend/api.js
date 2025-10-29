@@ -166,6 +166,53 @@ async function getRecipeDetails(recipeId) {
     }
 }
 
+// Filter recipes by cooking method
+async function applyCookingMethodFilter(recipes, methodFilter) {
+    const recipesWithMethod = await Promise.all(
+        recipes.map(async (recipe) => {
+            try {
+                const details = await getRecipeDetails(recipe.idMeal);
+                return { 
+                    ...recipe, 
+                    cookingMethod: determineCookingMethod(details.instructions) 
+                };
+            } catch (error) {
+                console.error(`Failed to get details for ${recipe.idMeal}`, error);
+                return { 
+                    ...recipe, 
+                    cookingMethod: 'unknown' 
+                };
+            }
+        })
+    );
+
+    // Filter based on selection
+    if (methodFilter === 'all') return recipesWithMethod;
+    
+    return recipesWithMethod.filter(recipe => {
+        if (methodFilter === 'both') {
+            return recipe.cookingMethod === 'both';
+        }
+        return recipe.cookingMethod === methodFilter || recipe.cookingMethod === 'both';
+    });
+}
+
+// Determine cooking method from recipe instructions
+function determineCookingMethod(instructions) {
+    const lowerInstructions = instructions.toLowerCase();
+    
+    const ovenKeywords = ['oven', 'bake', 'baking', 'roast', 'roasting', 'broil', 'broiling'];
+    const stoveKeywords = ['stove', 'stovetop', 'pan', 'pot', 'skillet', 'saucepan', 'fry', 'frying', 'sauté', 'boil', 'boiling', 'simmer', 'simmering'];
+    
+    const hasOven = ovenKeywords.some(keyword => lowerInstructions.includes(keyword));
+    const hasStove = stoveKeywords.some(keyword => lowerInstructions.includes(keyword));
+    
+    if (hasOven && hasStove) return 'both';
+    if (hasOven) return 'oven';
+    if (hasStove) return 'stove';
+    return 'unknown';
+}
+
 // ---- expose functions to window for tests / non-module script usage ----
 if (typeof window !== "undefined") {
   window.getUserIngredients = getUserIngredients;
@@ -175,4 +222,6 @@ if (typeof window !== "undefined") {
   window.getAllIngredientsFromMealDB = getAllIngredientsFromMealDB;
   window.searchRecipesByIngredients = searchRecipesByIngredients;
   window.getRecipeDetails = getRecipeDetails;
+  window.applyCookingMethodFilter = applyCookingMethodFilter;
+  window.determineCookingMethod = determineCookingMethod;
 }

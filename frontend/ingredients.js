@@ -293,7 +293,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
+            // Store the original recipes for filtering
+            window.allFoundRecipes = recipes;
+            
+            // Default to showing all recipes initially
             displayRecipes(recipes);
+            
+            // Set up cooking method filter buttons
+            setupCookingMethodFilters();
         } catch (error) {
             console.error('Failed to find recipes:', error);
             recipeResults.innerHTML = '<p class="muted">Failed to find recipes. Please try again.</p>';
@@ -322,6 +329,14 @@ document.addEventListener('DOMContentLoaded', function() {
             matchInfo.className = 'muted small';
             matchInfo.textContent = `Matched: ${recipe.matchedIngredient}`;
             
+            // Add cooking method badge if available
+            if (recipe.cookingMethod) {
+                const methodBadge = document.createElement('span');
+                methodBadge.className = `method-badge method-${recipe.cookingMethod.toLowerCase()}`;
+                methodBadge.textContent = recipe.cookingMethod;
+                card.appendChild(methodBadge);
+            }
+            
             const viewBtn = document.createElement('button');
             viewBtn.className = 'btn primary';
             viewBtn.textContent = 'View Recipe';
@@ -333,6 +348,41 @@ document.addEventListener('DOMContentLoaded', function() {
             card.appendChild(viewBtn);
             
             recipeResults.appendChild(card);
+        });
+    }
+    
+    // Set up cooking method filter buttons
+    function setupCookingMethodFilters() {
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', async function() {
+                // Update active button
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show loading state
+                recipeResults.innerHTML = '<p class="loading">Filtering recipes...</p>';
+                
+                // Get selected method
+                const methodFilter = this.getAttribute('data-method');
+                
+                try {
+                    // Apply the cooking method filter
+                    const filteredRecipes = await applyCookingMethodFilter(window.allFoundRecipes, methodFilter);
+                    
+                    if (filteredRecipes.length === 0) {
+                        recipeResults.innerHTML = `<p class="muted">No recipes found using ${methodFilter} cooking method. Try a different filter.</p>`;
+                        return;
+                    }
+                    
+                    // Display filtered recipes
+                    displayRecipes(filteredRecipes);
+                } catch (error) {
+                    console.error('Failed to filter recipes:', error);
+                    recipeResults.innerHTML = '<p class="muted">Failed to filter recipes. Please try again.</p>';
+                }
+            });
         });
     }
     

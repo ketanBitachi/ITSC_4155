@@ -53,6 +53,16 @@
                 <h2>Recipe Suggestions</h2>
                 <p class="subtitle">Based on your selected ingredients</p>
                 
+                <div class="filter-controls">
+                    <label>Filter by cooking method:</label>
+                    <div class="button-group">
+                        <button class="filter-btn active" data-method="all">All Methods</button>
+                        <button class="filter-btn" data-method="oven">Oven</button>
+                        <button class="filter-btn" data-method="stove">Stovetop</button>
+                        <button class="filter-btn" data-method="both">Both Methods</button>
+                    </div>
+                </div>
+                
                 <div id="recipeResults" class="recipe-grid">
                     <p class="loading">Loading recipes...</p>
                 </div>
