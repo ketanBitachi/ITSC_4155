@@ -201,6 +201,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // --- Find Recipes ---
+    let allFoundRecipes = []; // Store all recipes for filtering
+    
     async function findRecipes() {
         if (selectedIngredients.size === 0) {
             alert('Please select at least one ingredient first.');
@@ -218,7 +220,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 recipeResults.innerHTML = '<p class="muted">No recipes found. Try selecting different ingredients.</p>';
                 return;
             }
+            
+            // Store all recipes for filtering
+            allFoundRecipes = recipes;
+            window.allFoundRecipes = recipes; // Make available globally
+            
             displayRecipes(recipes);
+            setupCookingMethodFilters(); // Setup filter functionality
         } catch (err) {
             console.error('Failed to find recipes:', err);
             recipeResults.innerHTML = '<p class="muted">Failed to find recipes. Please try again.</p>';
@@ -253,6 +261,15 @@ document.addEventListener('DOMContentLoaded', function () {
             matchInfo.className = 'muted small';
             matchInfo.textContent = `Matched: ${recipe.matchedIngredient}`;
 
+            // Add cooking method badge if available
+            if (recipe.cookingMethod) {
+                const methodBadge = document.createElement('span');
+                methodBadge.className = `cooking-method-badge ${recipe.cookingMethod}`;
+                methodBadge.textContent = recipe.cookingMethod === 'both' ? 'Oven + Stove' : 
+                                        recipe.cookingMethod.charAt(0).toUpperCase() + recipe.cookingMethod.slice(1);
+                card.appendChild(methodBadge);
+            }
+
             const viewBtn = document.createElement('button');
             viewBtn.className = 'btn primary';
             viewBtn.textContent = 'View Recipe';
@@ -260,6 +277,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
             card.append(checkbox, img, name, matchInfo, viewBtn);
             recipeResults.appendChild(card);
+        });
+    }
+
+    // --- Setup Cooking Method Filters ---
+    function setupCookingMethodFilters() {
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', async (e) => {
+                // Update active button
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                const filterValue = e.target.dataset.filter;
+                
+                // Show loading
+                recipeResults.innerHTML = '<p class="loading">Filtering recipes...</p>';
+                
+                try {
+                    // Apply filter
+                    const filteredRecipes = await applyCookingMethodFilter(allFoundRecipes, filterValue);
+                    
+                    if (filteredRecipes.length === 0) {
+                        recipeResults.innerHTML = '<p class="muted">No recipes found for this cooking method.</p>';
+                    } else {
+                        displayRecipes(filteredRecipes);
+                    }
+                } catch (error) {
+                    console.error('Filter error:', error);
+                    recipeResults.innerHTML = '<p class="muted">Error filtering recipes. Please try again.</p>';
+                }
+            });
         });
     }
 

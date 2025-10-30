@@ -369,3 +369,80 @@ p.subtitle {
 .instructions {
   white-space: pre-line;
 }
+
+/* ===============================
+   Filter Controls
+   =============================== */
+.filter-controls {
+  margin: 20px 0;
+  padding: 16px;
+  background: var(--bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.filter-controls h4 {
+  margin: 0 0 12px 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  border: 2px solid var(--border);
+  background: white;
+  color: var(--muted);
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.filter-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.cooking-method-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  margin: 4px 0;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.cooking-method-badge.oven {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.cooking-method-badge.stove {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.cooking-method-badge.both {
+  background-color: #f3e8ff;
+  color: #7c3aed;
+}
+
+.cooking-method-badge.unknown {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
