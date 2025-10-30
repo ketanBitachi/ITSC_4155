@@ -25,7 +25,7 @@ class Settings:
     DB_NAME: str = os.getenv("DB_NAME", "itsc4155")
     DB_PORT: str = os.getenv("DB_PORT", "3306")
     DB_USER: str = os.getenv("DB_USER", "root")
-    DB_PASSWORD: str = os.getenv("DB_PASSWORD", "n4ttyCodes:)")
+    DB_PASSWORD: str = os.getenv("DB_PASSWORD", "")
     
     # JWT settings
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
