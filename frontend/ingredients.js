@@ -1,11 +1,7 @@
-// Ingredients management and UI functionality
+// === INGREDIENTS & RECIPE MANAGEMENT ===
 document.addEventListener('DOMContentLoaded', function () {
-    // Check authentication
-    if (!checkAuthStatus()) {
-        return;
-    }
-
-    // Set year in footer
+    // --- AUTH CHECK ---
+    if (!checkAuthStatus()) return;
     document.getElementById('year').textContent = new Date().getFullYear();
 
     // --- STATE VARIABLES ---
@@ -29,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const homeBtn = document.getElementById('homeBtn');
     const pantryBtn = document.getElementById('pantryBtn');
 
-    // --- NAVIGATION HANDLERS ---
+    // --- NAVIGATION ---
     logoutBtn?.addEventListener('click', logoutUser);
     homeBtn?.addEventListener('click', () => (window.location.href = 'index.html'));
     pantryBtn?.addEventListener('click', () => showPanel('ingredients'));
@@ -44,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
     savePantryBtn.addEventListener('click', savePantry);
     findRecipesBtn.addEventListener('click', findRecipes);
 
-    // --- MODAL CLOSE HANDLERS ---
+    // --- MODAL HANDLING ---
     const closeModal = document.querySelector('.close-modal');
     closeModal?.addEventListener('click', () => (recipeModal.style.display = 'none'));
     window.addEventListener('click', (e) => {
@@ -53,17 +49,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ==================== FUNCTIONS ====================
 
+    // --- Panel Switcher ---
     function showPanel(panelId) {
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
         document.getElementById(panelId).classList.add('active');
     }
 
-    // --- Load user's saved ingredients from backend ---
+    // --- Load User's Saved Ingredients ---
     async function loadUserSavedIngredients() {
         try {
             const savedIngredients = await getUserIngredients();
             userSavedIngredients = savedIngredients;
-
             savedIngredients.forEach(ing => selectedIngredients.add(ing.ingredient_name.toLowerCase()));
             updateSelectedChips();
         } catch (err) {
@@ -71,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // --- Load ingredients from MealDB API ---
+    // --- Load Ingredients from MealDB ---
     async function loadAllIngredients() {
         loadIngredientsBtn.disabled = true;
         loadIngredientsBtn.textContent = 'Loading...';
@@ -93,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // --- Render ingredients grouped alphabetically ---
+    // --- Render Ingredients Alphabetically ---
     function renderIngredients(ingredients) {
         if (!ingredients.length) {
             ingredientsList.innerHTML = '<p class="muted">No ingredients found.</p>';
@@ -128,24 +124,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 checkbox.checked = selectedIngredients.has(ingredient.toLowerCase());
 
                 checkbox.addEventListener('change', e => {
-                    e.target.checked
-                        ? selectedIngredients.add(ingredient.toLowerCase())
-                        : selectedIngredients.delete(ingredient.toLowerCase());
+                    if (e.target.checked) selectedIngredients.add(ingredient.toLowerCase());
+                    else selectedIngredients.delete(ingredient.toLowerCase());
                     updateSelectedChips();
                 });
 
-                label.appendChild(checkbox);
-                label.appendChild(document.createTextNode(' ' + ingredient));
+                label.append(checkbox, document.createTextNode(' ' + ingredient));
                 grid.appendChild(label);
             });
 
-            accItem.appendChild(summary);
-            accItem.appendChild(grid);
+            accItem.append(summary, grid);
             ingredientsList.appendChild(accItem);
         });
     }
 
-    // --- Filter ingredients by search input ---
+    // --- Search Filter ---
     function filterIngredients() {
         const searchTerm = searchInput.value.toLowerCase().trim();
         const filtered = searchTerm
@@ -154,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
         renderIngredients(filtered);
     }
 
-    // --- Update selected chips display ---
+    // --- Selected Chips Display ---
     function updateSelectedChips() {
         selectedChips.innerHTML = '';
         if (selectedIngredients.size === 0) {
@@ -207,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // --- Find recipes from selected ingredients ---
+    // --- Find Recipes ---
     async function findRecipes() {
         if (selectedIngredients.size === 0) {
             alert('Please select at least one ingredient first.');
@@ -235,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // --- Display recipe cards ---
+    // --- Display Recipe Cards ---
     function displayRecipes(recipes) {
         recipeResults.innerHTML = '';
 
@@ -270,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // --- View recipe details (modal) ---
+    // --- View Recipe Modal ---
     async function viewRecipe(recipeId) {
         recipeModal.style.display = 'block';
         recipeDetails.innerHTML = '<p class="loading">Loading recipe details...</p>';
@@ -283,77 +276,62 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // --- Display recipe details with "Have" & "Missing" sections ---
-function displayRecipeDetails(recipe) {
-    const ingredients = recipe.ingredients || [];
+    // --- Enhanced Recipe Modal with "Have" & "Missing" ---
+    function displayRecipeDetails(recipe) {
+        const ingredients = recipe.ingredients || [];
+        const haveList = [];
+        const missingList = [];
 
-    const haveList = [];
-    const missingList = [];
+        ingredients.forEach(ing => {
+            if (selectedIngredients.has(ing.name.toLowerCase())) haveList.push(`${ing.name} - ${ing.measure}`);
+            else missingList.push(`${ing.name} - ${ing.measure}`);
+        });
 
-    ingredients.forEach(ing => {
-        if (selectedIngredients.has(ing.name.toLowerCase())) {
-            haveList.push(`${ing.name} - ${ing.measure}`);
-        } else {
-            missingList.push(`${ing.name} - ${ing.measure}`);
-        }
-    });
+        const ingredientsHTML = `
+          <div class="ingredients-section">
+            <h4>✅ You Have:</h4>
+            ${haveList.length ? `<ul>${haveList.map(i => `<li>${i}</li>`).join('')}</ul>` : '<p class="muted">No matching ingredients in pantry.</p>'}
+            <h4>❌ Missing Ingredients:</h4>
+            ${missingList.length ? `<ul class="missing">${missingList.map(i => `<li>${i}</li>`).join('')}</ul>` : '<p class="muted">You have all ingredients!</p>'}
+          </div>
+        `;
 
-    const ingredientsList = `
-      <div class="ingredients-section">
-        <h4>✅ You Have:</h4>
-        ${haveList.length
-            ? `<ul>${haveList.map(i => `<li>${i}</li>`).join('')}</ul>`
-            : '<p class="muted">No matching ingredients in pantry.</p>'}
-        <h4>❌ Missing Ingredients:</h4>
-        ${missingList.length
-            ? `<ul class="missing">${missingList.map(i => `<li>${i}</li>`).join('')}</ul>`
-            : '<p class="muted">You have all ingredients!</p>'}
-      </div>
-    `;
+        const instructions = recipe.instructions.replace(/\r?\n/g, '<br>');
 
-    const instructions = recipe.instructions.replace(/\r?\n/g, '<br>');
-
-    // ✅ build the HTML
-    recipeDetails.innerHTML = `
-        <div class="recipe-header">
-            <img src="${recipe.thumbnail}" alt="${recipe.name}">
-            <div class="recipe-info">
-                <h2>${recipe.name}</h2>
-                <p><strong>Category:</strong> ${recipe.category}</p>
-                <p><strong>Cuisine:</strong> ${recipe.area}</p>
-                ${recipe.tags?.length ? `<p><strong>Tags:</strong> ${recipe.tags.join(', ')}</p>` : ''}
-                ${recipe.youtube ? `<p><a href="${recipe.youtube}" target="_blank" class="btn outline">Watch on YouTube</a></p>` : ''}
+        recipeDetails.innerHTML = `
+            <div class="recipe-header">
+                <img src="${recipe.thumbnail}" alt="${recipe.name}">
+                <div class="recipe-info">
+                    <h2>${recipe.name}</h2>
+                    <p><strong>Category:</strong> ${recipe.category}</p>
+                    <p><strong>Cuisine:</strong> ${recipe.area}</p>
+                    ${recipe.tags?.length ? `<p><strong>Tags:</strong> ${recipe.tags.join(', ')}</p>` : ''}
+                    ${recipe.youtube ? `<p><a href="${recipe.youtube}" target="_blank" class="btn outline">Watch on YouTube</a></p>` : ''}
+                </div>
             </div>
-        </div>
-        <div class="recipe-body">
-            <h3>Ingredients</h3>
-            ${ingredientsList}
-            <h3>Instructions</h3>
-            <div class="instructions">${instructions}</div>
-        </div>
-    `;
+            <div class="recipe-body">
+                <h3>Ingredients</h3>
+                ${ingredientsHTML}
+                <h3>Instructions</h3>
+                <div class="instructions">${instructions}</div>
+            </div>
+        `;
 
-    // ✅ Save missing ingredients in localStorage for grocery list
-    localStorage.setItem("currentMissingIngredients", JSON.stringify(missingList));
-}
+        localStorage.setItem("currentMissingIngredients", JSON.stringify(missingList));
+    }
 
-
-    // --- Handle "Generate Grocery List" navigation ---
+    // --- Grocery List Navigation ---
     document.getElementById("goToGroceryBtn")?.addEventListener("click", () => {
-        const selectedRecipeIds = Array.from(document.querySelectorAll('.recipe-checkbox:checked'))
-            .map(cb => parseInt(cb.value));
-
+        const selectedRecipeIds = Array.from(document.querySelectorAll('.recipe-checkbox:checked')).map(cb => parseInt(cb.value));
         if (!selectedRecipeIds.length) {
             alert("Please select at least one recipe before generating a grocery list.");
             return;
         }
-
         localStorage.setItem("selectedRecipeIds", JSON.stringify(selectedRecipeIds));
-
         showPanel("groceryListSection");
-        
     });
-    // --- Automatically open Grocery List panel if user came from Home ---
+
+    // --- Auto-Open Grocery List Section ---
     if (window.location.hash === '#groceries') {
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
         document.getElementById('groceryListSection').classList.add('active');
