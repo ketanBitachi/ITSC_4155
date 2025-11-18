@@ -216,6 +216,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
             const recipes = await searchRecipesByIngredients(Array.from(selectedIngredients));
+            // Preload favorites to set initial heart states
+            try {
+                const favs = await getFavorites();
+                window.favoriteIds = new Set(favs.map(f => f.recipe_id));
+            } catch (_) {
+                window.favoriteIds = new Set();
+            }
             if (!recipes.length) {
                 recipeResults.innerHTML = '<p class="muted">No recipes found. Try selecting different ingredients.</p>';
                 return;
@@ -270,12 +277,51 @@ document.addEventListener('DOMContentLoaded', function () {
                 card.appendChild(methodBadge);
             }
 
+            // Heart (Favorite) button
+            const heartBtn = document.createElement('button');
+            heartBtn.className = 'heart-btn';
+            heartBtn.setAttribute('aria-label', 'Toggle Favorite');
+            heartBtn.title = 'Save to Favorites';
+
+            const isFav = window.favoriteIds?.has?.(recipe.idMeal);
+            if (isFav) heartBtn.classList.add('favorite');
+            heartBtn.textContent = isFav ? '♥' : '♡';
+
+            heartBtn.addEventListener('click', async () => {
+                heartBtn.disabled = true;
+                try {
+                    if (heartBtn.classList.contains('favorite')) {
+                        await removeFavorite(recipe.idMeal);
+                        heartBtn.classList.remove('favorite');
+                        heartBtn.textContent = '♡';
+                        window.favoriteIds?.delete?.(recipe.idMeal);
+                    } else {
+                        const detail = await getRecipeDetails(recipe.idMeal);
+                        await addFavorite(detail);
+                        heartBtn.classList.add('favorite');
+                        heartBtn.textContent = '♥';
+                        if (!window.favoriteIds) window.favoriteIds = new Set();
+                        window.favoriteIds.add(recipe.idMeal);
+                    }
+                } catch (e) {
+                    console.error('Favorite toggle failed:', e);
+                    alert('Could not update favorite. Please try again.');
+                } finally {
+                    heartBtn.disabled = false;
+                }
+            });
+
             const viewBtn = document.createElement('button');
             viewBtn.className = 'btn primary';
             viewBtn.textContent = 'View Recipe';
             viewBtn.addEventListener('click', () => viewRecipe(recipe.idMeal));
 
-            card.append(checkbox, img, name, matchInfo, viewBtn);
+            // Controls row: place heart to the right of the view button
+            const controls = document.createElement('div');
+            controls.className = 'card-controls';
+            controls.append(viewBtn, heartBtn);
+
+            card.append(checkbox, img, name, matchInfo, controls);
             recipeResults.appendChild(card);
         });
     }
@@ -384,5 +430,69 @@ document.addEventListener('DOMContentLoaded', function () {
     if (window.location.hash === '#groceries') {
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
         document.getElementById('groceryListSection').classList.add('active');
+    }
+    // Nav: show Past Recipes (Favorites)
+    document.getElementById('navPastRecipes')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        showPanel('pastRecipesSection');
+        await loadFavorites();
+    });
+
+    async function loadFavorites() {
+        const container = document.getElementById('favoritesList');
+        container.innerHTML = '<p class="loading">Loading favorites...</p>';
+        try {
+            const favs = await getFavorites();
+            window.favoriteIds = new Set(favs.map(f => f.recipe_id));
+            if (!favs.length) {
+                container.innerHTML = '<p class="muted">No favorites yet.</p>';
+                return;
+            }
+            container.innerHTML = '';
+            favs.forEach(f => {
+                const r = f.recipe_json;
+                const card = document.createElement('div');
+                card.className = 'recipe-card';
+
+                const img = document.createElement('img');
+                img.src = r.thumbnail;
+                img.alt = r.name;
+
+                const name = document.createElement('h3');
+                name.textContent = r.name;
+
+                const heartBtn = document.createElement('button');
+                heartBtn.className = 'heart-btn favorite';
+                heartBtn.textContent = '♥';
+                heartBtn.title = 'Remove Favorite';
+                heartBtn.addEventListener('click', async () => {
+                    heartBtn.disabled = true;
+                    try {
+                        await removeFavorite(r.id);
+                        window.favoriteIds.delete(r.id);
+                        await loadFavorites(); // refresh list
+                    } catch (e) {
+                        console.error(e);
+                        alert('Could not remove favorite.');
+                        heartBtn.disabled = false;
+                    }
+                });
+
+                const viewBtn = document.createElement('button');
+                viewBtn.className = 'btn primary';
+                viewBtn.textContent = 'View Recipe';
+                viewBtn.addEventListener('click', () => viewRecipe(r.id));
+
+                const controls = document.createElement('div');
+                controls.className = 'card-controls';
+                controls.append(viewBtn, heartBtn);
+
+                card.append(img, name, controls);
+                container.appendChild(card);
+            });
+        } catch (err) {
+            console.error('Favorites load error:', err);
+            container.innerHTML = '<p class="muted">Failed to load favorites.</p>';
+        }
     }
 });

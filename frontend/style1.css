@@ -446,3 +446,31 @@ p.subtitle {
   background-color: #f3f4f6;
   color: #6b7280;
 }
+/* Heart button styling */
+.heart-btn {
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #d33;
+  border-radius: 999px;
+  width: 44px;
+  height: 44px;
+  margin: 6px 8px;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 42px;
+  text-align: center;
+}
+.heart-btn.favorite {
+  background: #d33;
+  color: #fff;
+  border-color: #d33;
+}
+
+/* Controls row on recipe card */
+.card-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* view button on left, heart on right */
+  gap: 8px;
+  margin-top: 8px;
+}
