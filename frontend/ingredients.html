@@ -13,6 +13,7 @@
             <div class="brand">🥗 Easy <span>Kitchen</span></div>
             <nav class="top-nav">
                 <button class="link" id="homeBtn">Home</button>
+                <button class="link" id="dietBtn">Dietary</button>
                 <button class="link" id="pantryBtn">My Pantry</button>
                 <button class="link" id="logoutBtn">Logout</button>
             </nav>
@@ -74,25 +75,45 @@
                 </div>
             </div>
         </section>
-                <!-- Grocery List Panel -->
+
+        <!-- Grocery List Panel -->
         <section id="groceryListSection" class="panel">
             <div class="card">
                 <h2>🛒 Grocery List</h2>
-                <p>Missing ingredients based on your selected recipes:</p>
-                <div id="groceryList" class="list-container"></div>
-                <div class="actions">
-                    <button class="btn outline" onclick="window.location.href='index.html'">Back to Home</button>
-                    <button id="generateListBtn" class="btn primary">Generate Grocery List</button>
-                    <button id="saveListBtn" class="btn">Save List</button>
-                    <button id="exportListBtn" class="btn outline">Export to PDF</button>
+                <p class="subtitle">
+                    Missing ingredients based on the recipe(s) you selected.
+                </p>
+
+                <div id="groceryList" class="list-container">
+                    <p class="muted">
+                        No grocery list found yet. Select recipes and click
+                        <strong>Generate Grocery List</strong>.
+                    </p>
                 </div>
+
+                <div class="actions grocery-actions">
+                    <button class="btn btn-back" id="backToRecipesBtn">
+                        Back to Recipes
+                    </button>
+
+                    <button class="btn btn-generate" id="generateListBtn">
+                        Generate Grocery List
+                    </button>
+
+                    <button class="btn btn-save" id="saveListBtn">
+                        Save List
+                    </button>
+
+                    <button class="btn btn-export" id="exportListBtn">
+                        Export to PDF
+                    </button>
                 </div>
+            </div>
         </section>
-          
     </main>
 
     <!-- Recipe Detail Modal -->
-    <div id="recipeModal" class="modal">
+    <div id="recipeModal" class="recipe-modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
             <div id="recipeDetails">
@@ -106,7 +127,7 @@
             <small>&copy; <span id="year"></span> Easy Kitchen</small>
         </div>
     </footer>
-    
+
     <!-- Config and app scripts -->
     <script src="config.js"></script>
     <script src="auth.js"></script>
@@ -116,7 +137,5 @@
     <!-- Load jsPDF before grocerylist.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="grocerylist.js"></script>
-
-
 </body>
 </html>

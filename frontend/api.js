@@ -247,3 +247,11 @@ if (typeof window !== "undefined") {
   window.determineCookingMethod = determineCookingMethod;
   window.sortRecipes = sortRecipes;
 }
+
+async function getUserDietaryPreferences() {
+  // call your FastAPI endpoint and return an array of strings
+}
+
+async function saveUserDietaryPreferences(preferences) {
+  // POST/PUT to your FastAPI endpoint with the array
+}

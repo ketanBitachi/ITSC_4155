@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Easy Kitchen - Dietary Preferences</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style1.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="shell">
+      <div class="brand">🥗 Easy <span>Kitchen</span></div>
+      <nav class="top-nav">
+        <button class="link" id="homeBtn">Home</button>
+        <button class="link" id="dietBtn">Dietary</button>
+        <button class="link" id="pantryBtn">My Pantry</button>
+        <button class="link" id="logoutBtn">Logout</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="card">
+      <h2>Dietary Preferences</h2>
+      <p class="subtitle">
+        Select what fits you so we can better filter recipes and grocery lists.
+      </p>
+
+      <div class="checkbox-grid" id="dietaryOptions">
+        <label class="checkbox-item">
+          <input type="checkbox" value="vegetarian" />
+          Vegetarian
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="vegan" />
+          Vegan
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="gluten_free" />
+          Gluten-Free
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="dairy_free" />
+          Dairy-Free
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="nut_free" />
+          Nut-Free
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="halal" />
+          Halal
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="kosher" />
+          Kosher
+        </label>
+      </div>
+
+      <div class="actions between">
+        <button class="btn primary" id="saveDietPrefsBtn">Save Preferences</button>
+        <span id="dietaryStatus" class="muted"></span>
+    </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell">
+      <small>&copy; <span id="year"></span> Easy Kitchen</small>
+    </div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <script src="settings.js"></script>
+</body>
+</html>
