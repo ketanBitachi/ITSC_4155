@@ -6,6 +6,7 @@
     <title>Easy Kitchen - Welcome</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style1.css">
+    <link rel="stylesheet" href="onboarding.css">
 </head>
 <body>
     <header class="site-header">
@@ -33,6 +34,7 @@
                 <div class="actions center">
                     <button class="btn primary" onclick="window.location.href='login.html'">Get Started</button>
                     <a href="ingredients.html#groceries" class="btn outline">View My Grocery List</a>
+                    <button class="btn outline" id="startOnboardingBtn">Start Onboarding</button>
 
                 </div>
             </div>
@@ -54,29 +56,39 @@
           const savedGroceryList = JSON.parse(localStorage.getItem("currentMissingIngredients") || "[]");
         
           const actions = document.querySelector('.actions');
+          const startBtnStatic = document.getElementById('startOnboardingBtn');
         
           // ✅ If user is logged in and has a saved grocery list
-          if (token && expiry && new Date() < new Date(expiry)) {
+          const loggedIn = token && expiry && new Date() < new Date(expiry);
+
+          if (loggedIn) {
+            // Build actions dynamically to preserve primary link and add Start Onboarding
+            actions.innerHTML = '';
+            let primary;
             if (savedGroceryList.length > 0) {
-              // show grocery list link instead of Get Started
-              const groceryLink = document.createElement('a');
-              groceryLink.href = 'ingredients.html#groceries';
-              groceryLink.className = 'btn primary';
-              groceryLink.textContent = 'View My Grocery List';
-              actions.innerHTML = ''; // remove the Get Started button
-              actions.appendChild(groceryLink);
+              primary = document.createElement('a');
+              primary.href = 'ingredients.html#groceries';
+              primary.className = 'btn primary';
+              primary.textContent = 'View My Grocery List';
             } else {
-              // fallback to pantry
-              const pantryLink = document.createElement('a');
-              pantryLink.href = 'ingredients.html';
-              pantryLink.className = 'btn primary';
-              pantryLink.textContent = 'Go to My Pantry';
-              actions.innerHTML = '';
-              actions.appendChild(pantryLink);
+              primary = document.createElement('a');
+              primary.href = 'ingredients.html';
+              primary.className = 'btn primary';
+              primary.textContent = 'Go to My Pantry';
             }
+            const startBtn = document.createElement('button');
+            startBtn.id = 'startOnboardingBtn';
+            startBtn.className = 'btn outline';
+            startBtn.textContent = 'Start Onboarding';
+            actions.appendChild(primary);
+            actions.appendChild(startBtn);
+          } else {
+            // Hide Start Onboarding when logged out
+            if (startBtnStatic) startBtnStatic.style.display = 'none';
           }
         });
         </script>
+    <script src="onboarding.js"></script>
         
 </body>
 </html>
