@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Kitchen - Contact Support</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style1.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="shell">
+            <div class="brand">🥗 Easy <span>Kitchen</span></div>
+            <nav class="top-nav">
+                <button class="link" onclick="window.location.href='index.html'">Home</button>
+                <button class="link" onclick="window.location.href='login.html'">Login</button>
+                <button class="link" onclick="window.location.href='ingredients.html'">My Pantry</button>
+                <button class="link" onclick="window.location.href='settings.html'">Dietary</button>
+                <button class="link" onclick="window.location.href='contact.html'">Contact</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="shell">
+        <section class="panel active">
+            <div class="card narrow">
+                <h2>Contact Support</h2>
+                <p class="subtitle">Send feedback or report an issue. We’ll respond via email.</p>
+
+                <form id="contactForm" class="form">
+                    <div id="contactStatus" class="error-message"></div>
+                    <label>Name
+                        <input type="text" name="name" placeholder="Your Name" required minlength="1" maxlength="100">
+                    </label>
+                    <label>Email
+                        <input type="email" name="email" placeholder="you@example.com" required maxlength="120">
+                    </label>
+                    <label>Message
+                        <textarea name="message" placeholder="How can we help?" required minlength="1" maxlength="5000" rows="6"></textarea>
+                    </label>
+                    <button id="sendBtn" class="btn primary" type="submit">Send</button>
+                </form>
+
+                <p id="successMsg" class="muted" style="display:none; margin-top: 10px;">Message sent successfully!</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="shell">
+            <small>&copy; <span id="year"></span> Easy Kitchen</small>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="contact.js"></script>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

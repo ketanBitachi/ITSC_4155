@@ -137,6 +137,18 @@ p.subtitle {
   font-size: 15px;
 }
 
+/* Contact form-specific tweaks: ensure label text sits above textarea */
+#contactForm textarea {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  resize: vertical;
+  margin-top: 6px;
+}
+
 .btn {
   display: inline-block;
   border: none;
