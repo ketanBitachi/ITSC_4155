@@ -1,0 +1,110 @@
+/* Onboarding tour styles (scoped) */
+:root {
+  --onboarding-accent: #3b82f6; /* blue-500 */
+  --onboarding-bg: rgba(0,0,0,0.5);
+  --onboarding-tooltip-bg: #0b1220;
+  --onboarding-tooltip-border: #1f2a44;
+}
+
+[data-onboarding-active="true"] {
+  cursor: default;
+}
+
+.onboarding-ring {
+  position: absolute;
+  border: 2px solid var(--onboarding-accent);
+  border-radius: 10px;
+  box-shadow: 0 0 0 9999px var(--onboarding-bg);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.onboarding-tooltip {
+  position: absolute;
+  max-width: 320px;
+  background: var(--onboarding-tooltip-bg);
+  border: 1px solid var(--onboarding-tooltip-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: #e5e7eb;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;
+  z-index: 10000;
+}
+
+.onboarding-tooltip h4 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: #f8fafc;
+}
+
+.onboarding-tooltip p {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+
+.onboarding-tooltip .actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.onboarding-btn {
+  appearance: none;
+  border: 1px solid #334155;
+  background: #111827;
+  color: #e5e7eb;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.onboarding-btn.primary {
+  border-color: var(--onboarding-accent);
+  background: var(--onboarding-accent);
+  color: white;
+}
+
+.onboarding-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: var(--onboarding-bg);
+  z-index: 10001;
+}
+
+.onboarding-modal.open {
+  display: flex;
+}
+
+.onboarding-modal .modal-content {
+  width: min(560px, 92vw);
+  background: #0b1220;
+  border: 1px solid #1f2a44;
+  border-radius: 12px;
+  padding: 18px 20px;
+  color: #e5e7eb;
+}
+
+.onboarding-modal h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.onboarding-modal p {
+  margin: 0 0 16px;
+  font-size: 14px;
+}
+
+.onboarding-modal .actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.onboarding-hidden {
+  display: none !important;
+}

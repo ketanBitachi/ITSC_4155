@@ -126,6 +126,11 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 const result = await loginUser(form.email.value, form.password.value);
                 if (result.success) {
+                    // Persist current user for onboarding and other features
+                    const userId = result.username || form.email.value;
+                    if (userId) {
+                        try { localStorage.setItem('currentUser', userId); } catch (_) {}
+                    }
                     window.location.href = 'ingredients.html';
                 } else {
                     errorDiv.textContent = result.message;
