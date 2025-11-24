@@ -12,10 +12,10 @@
         <div class="shell">
             <div class="brand">🥗 Easy <span>Kitchen</span></div>
             <nav class="top-nav">
-                <a href="#" id="navHome">Home</a>
-                <a href="#" id="navPantry">My Pantry</a>
-                <a href="#" id="navPastRecipes">Past Recipes</a>
-                <a href="#" id="navLogout">Logout</a>
+                <a href="#" id="navHome" class="link">Home</a>
+                <a href="#" id="navPantry" class="link">My Pantry</a>
+                <a href="#" id="navPastRecipes" class="link">Past Recipes</a>
+                <a href="#" id="navLogout" class="link">Logout</a>
             </nav>
         </div>
     </header>
@@ -122,8 +122,10 @@
 </body>
 </html>
 
-<!-- Past Recipes: Favorites Section -->
+<!-- Past Recipes: Favorites Section (moved inside <main>) -->
 <section id="pastRecipesSection" class="panel">
-  <h2>Favorites</h2>
-  <div id="favoritesList" class="card-grid"></div>
+    <div class="card">
+        <h2>Past Recipes</h2>
+        <div id="favoritesList" class="recipe-grid"></div>
+    </div>
 </section>

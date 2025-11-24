@@ -24,11 +24,24 @@ document.addEventListener('DOMContentLoaded', function () {
     const logoutBtn = document.getElementById('logoutBtn');
     const homeBtn = document.getElementById('homeBtn');
     const pantryBtn = document.getElementById('pantryBtn');
+    // Update nav element IDs to match HTML header
+    const navLogout = document.getElementById('navLogout');
+    const navHome = document.getElementById('navHome');
+    const navPantry = document.getElementById('navPantry');
 
     // --- NAVIGATION ---
-    logoutBtn?.addEventListener('click', logoutUser);
-    homeBtn?.addEventListener('click', () => (window.location.href = 'index.html'));
-    pantryBtn?.addEventListener('click', () => showPanel('ingredients'));
+    navLogout?.addEventListener('click', (e) => {
+        e.preventDefault();
+        logoutUser();
+    });
+    navHome?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = 'index.html';
+    });
+    navPantry?.addEventListener('click', (e) => {
+        e.preventDefault();
+        showPanel('ingredients');
+    });
     backToIngredientsBtn?.addEventListener('click', () => showPanel('ingredients'));
 
     // --- INITIAL LOAD ---
@@ -442,12 +455,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const container = document.getElementById('favoritesList');
         container.innerHTML = '<p class="loading">Loading favorites...</p>';
         try {
-            const favs = await getFavorites();
+            const favs = await getFavorites();           // from api.js
             window.favoriteIds = new Set(favs.map(f => f.recipe_id));
+
             if (!favs.length) {
                 container.innerHTML = '<p class="muted">No favorites yet.</p>';
                 return;
             }
+
             container.innerHTML = '';
             favs.forEach(f => {
                 const r = f.recipe_json;
@@ -455,11 +470,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 card.className = 'recipe-card';
 
                 const img = document.createElement('img');
-                img.src = r.thumbnail;
-                img.alt = r.name;
+                img.src = r.thumbnail; img.alt = r.name;
 
                 const name = document.createElement('h3');
                 name.textContent = r.name;
+
+                const viewBtn = document.createElement('button');
+                viewBtn.className = 'btn primary';
+                viewBtn.textContent = 'View Recipe';
+                viewBtn.addEventListener('click', () => viewRecipe(r.id));
 
                 const heartBtn = document.createElement('button');
                 heartBtn.className = 'heart-btn favorite';
@@ -468,20 +487,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 heartBtn.addEventListener('click', async () => {
                     heartBtn.disabled = true;
                     try {
-                        await removeFavorite(r.id);
+                        await removeFavorite(r.id);      // from api.js
                         window.favoriteIds.delete(r.id);
-                        await loadFavorites(); // refresh list
-                    } catch (e) {
-                        console.error(e);
-                        alert('Could not remove favorite.');
+                        await loadFavorites();
+                    } finally {
                         heartBtn.disabled = false;
                     }
                 });
-
-                const viewBtn = document.createElement('button');
-                viewBtn.className = 'btn primary';
-                viewBtn.textContent = 'View Recipe';
-                viewBtn.addEventListener('click', () => viewRecipe(r.id));
 
                 const controls = document.createElement('div');
                 controls.className = 'card-controls';

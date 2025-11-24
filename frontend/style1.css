@@ -49,16 +49,13 @@ p.subtitle {
   border-bottom: 1px solid var(--border);
   box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
-
 .brand {
   font-size: 24px;
   font-weight: 700;
 }
-
 .brand span {
   color: var(--primary);
 }
-
 .top-nav {
   display: flex;
   gap: 16px;
@@ -74,10 +71,10 @@ p.subtitle {
   font-size: 15px;
   transition: color 0.2s;
 }
-
 .top-nav .link:hover {
   color: var(--primary);
 }
+
 
 .site-footer {
   text-align: center;
@@ -446,31 +443,31 @@ p.subtitle {
   background-color: #f3f4f6;
   color: #6b7280;
 }
-/* Heart button styling */
+/* Heart button styling (neutral, larger, no color fill) */
 .heart-btn {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
   background: #fff;
-  color: #d33;
+  color: #111827;       /* neutral text color */
   border-radius: 999px;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   margin: 6px 8px;
   cursor: pointer;
-  font-size: 22px;
-  line-height: 42px;
+  font-size: 24px;      /* larger symbol */
+  line-height: 46px;
   text-align: center;
 }
 .heart-btn.favorite {
-  background: #d33;
-  color: #fff;
-  border-color: #d33;
+  background: #fff;     /* no fill */
+  color: #111827;       /* no color change */
+  border-color: var(--border);
 }
 
 /* Controls row on recipe card */
 .card-controls {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* view button on left, heart on right */
+  justify-content: space-between;
   gap: 8px;
   margin-top: 8px;
 }
