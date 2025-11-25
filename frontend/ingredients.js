@@ -39,15 +39,15 @@ document.addEventListener('DOMContentLoaded', function () {
     recipeModal?.classList.remove('open');
 
     // --- NAVIGATION ---
-    navLogout?.addEventListener('click', (e) => {
+    logoutBtn?.addEventListener('click', (e) => {
         e.preventDefault();
         logoutUser();
     });
-    navHome?.addEventListener('click', (e) => {
+    homeBtn?.addEventListener('click', (e) => {
         e.preventDefault();
         window.location.href = 'index.html';
     });
-    navPantry?.addEventListener('click', (e) => {
+    pantryBtn?.addEventListener('click', (e) => {
         e.preventDefault();
         showPanel('ingredients');
     });
