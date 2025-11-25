@@ -26,6 +26,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const homeBtn = document.getElementById('homeBtn');
     const pantryBtn = document.getElementById('pantryBtn');
     const dietBtn = document.getElementById('dietBtn');
+    const clearFiltersBtn = document.getElementById("clearFiltersBtn");
+
+    // === PART 4: Restore persistence on page load ===
+    const wasCleared = localStorage.getItem("filtersCleared") === "true";
+    if (wasCleared) {
+    clearFiltersBtn.disabled = true;
+    }
+
 
     // make 100% sure modal is closed on load
     recipeModal?.classList.remove('open');
@@ -45,6 +53,8 @@ document.addEventListener('DOMContentLoaded', function () {
     searchInput.addEventListener('input', filterIngredients);
     savePantryBtn.addEventListener('click', savePantry);
     findRecipesBtn.addEventListener('click', findRecipes);
+    clearFiltersBtn?.addEventListener("click", clearAllFilters);
+
 
     // --- MODAL HANDLING ---
     const closeModal = document.querySelector('.close-modal');
@@ -337,6 +347,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 filterButtons.forEach(btn => btn.classList.remove('active'));
                 e.target.classList.add('active');
 
+                clearFiltersBtn.disabled = false;
+                localStorage.setItem("filtersCleared", "false");
+                
                 const filterValue = e.target.dataset.filter;
 
                 recipeResults.innerHTML = '<p class="loading">Filtering recipes...</p>';
@@ -517,4 +530,24 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
         showPanel("ingredients");
     }
+    // --- Clear all Filters section ---
+    function clearAllFilters() {
+        // Reset UI buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove("active");
+            if (btn.dataset.filter === "all") {
+                btn.classList.add("active");
+            }
+        });
+    
+        // Reset recipes to full list
+        displayRecipes(allFoundRecipes);
+    
+        // Disable Clear Filters button
+        clearFiltersBtn.disabled = true;
+    
+        // Persist cleared state
+        localStorage.setItem("filtersCleared", "true");
+    }
+    
 });
