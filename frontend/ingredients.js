@@ -60,27 +60,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Panel Switcher ---
     function showPanel(panelId) {
-        // Hide all panels
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
 
-        // Show the requested panel
         const target = document.getElementById(panelId);
         if (!target) return;
         target.classList.add('active');
 
-        // If we are leaving the recipes panel, always close the modal
         if (panelId !== 'recipes') {
             recipeModal?.classList.remove('open');
         }
 
-        // Keep the URL hash in sync for deep-linking to the grocery list
         if (panelId === 'groceryListSection') {
             window.location.hash = '#groceries';
         } else if (window.location.hash === '#groceries') {
             history.replaceState(null, '', window.location.pathname + window.location.search);
         }
 
-        // Smooth scroll to make it feel like a real web app
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -89,7 +84,9 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             const savedIngredients = await getUserIngredients();
             userSavedIngredients = savedIngredients;
-            savedIngredients.forEach(ing => selectedIngredients.add(ing.ingredient_name.toLowerCase()));
+            savedIngredients.forEach(ing =>
+                selectedIngredients.add(ing.ingredient_name.toLowerCase())
+            );
             updateSelectedChips();
         } catch (err) {
             console.error('Failed to load saved ingredients:', err);
@@ -211,9 +208,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
             const currentSaved = await getUserIngredients();
-            const currentSavedNames = new Set(currentSaved.map(ing => ing.ingredient_name.toLowerCase()));
-            const toAdd = Array.from(selectedIngredients).filter(ing => !currentSavedNames.has(ing));
-            const toRemove = currentSaved.filter(ing => !selectedIngredients.has(ing.ingredient_name.toLowerCase()));
+            const currentSavedNames = new Set(
+                currentSaved.map(ing => ing.ingredient_name.toLowerCase())
+            );
+            const toAdd = Array.from(selectedIngredients).filter(
+                ing => !currentSavedNames.has(ing)
+            );
+            const toRemove = currentSaved.filter(
+                ing => !selectedIngredients.has(ing.ingredient_name.toLowerCase())
+            );
 
             for (const ing of toAdd) await addIngredient(ing);
             for (const ing of toRemove) await removeIngredient(ing.id);
@@ -244,9 +247,28 @@ document.addEventListener('DOMContentLoaded', function () {
         recipeResults.innerHTML = '<p class="loading">Finding recipes for you...</p>';
 
         try {
-            const recipes = await searchRecipesByIngredients(Array.from(selectedIngredients));
+            // 1) Get the user's dietary preferences from backend
+            let prefsArray = [];
+            try {
+                const prefData = await getUserDietaryPreferences(); // from api.js
+                prefsArray = prefData?.preferences || [];
+                console.log("Using dietary preferences:", prefsArray);
+            } catch (err) {
+                console.warn(
+                    "Could not load dietary preferences; proceeding without filter.",
+                    err
+                );
+            }
+
+            // 2) Call recipe search with ingredients + preferences array
+            const recipes = await searchRecipesByIngredients(
+                Array.from(selectedIngredients),
+                prefsArray
+            );
+
             if (!recipes.length) {
-                recipeResults.innerHTML = '<p class="muted">No recipes found. Try selecting different ingredients.</p>';
+                recipeResults.innerHTML =
+                    '<p class="muted">No recipes found. Try selecting different ingredients or changing your dietary preferences.</p>';
                 return;
             }
 
@@ -258,7 +280,8 @@ document.addEventListener('DOMContentLoaded', function () {
             setupCookingMethodFilters();
         } catch (err) {
             console.error('Failed to find recipes:', err);
-            recipeResults.innerHTML = '<p class="muted">Failed to find recipes. Please try again.</p>';
+            recipeResults.innerHTML =
+                '<p class="muted">Failed to find recipes. Please try again.</p>';
         } finally {
             findRecipesBtn.disabled = false;
             findRecipesBtn.textContent = 'Find Recipes';
@@ -300,13 +323,7 @@ document.addEventListener('DOMContentLoaded', function () {
             viewBtn.textContent = 'View Recipe';
             viewBtn.addEventListener('click', () => viewRecipe(recipe.idMeal));
 
-            card.append(
-                img,
-                name,
-                matchInfo,
-                checkboxLabel,
-                viewBtn
-            );
+            card.append(img, name, matchInfo, checkboxLabel, viewBtn);
             recipeResults.appendChild(card);
         });
     }
@@ -317,27 +334,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
         filterButtons.forEach(button => {
             button.addEventListener('click', async (e) => {
-                // Update active button
                 filterButtons.forEach(btn => btn.classList.remove('active'));
                 e.target.classList.add('active');
 
                 const filterValue = e.target.dataset.filter;
 
-                // Show loading
                 recipeResults.innerHTML = '<p class="loading">Filtering recipes...</p>';
 
                 try {
-                    // Apply filter
-                    const filteredRecipes = await applyCookingMethodFilter(allFoundRecipes, filterValue);
+                    const filteredRecipes = await applyCookingMethodFilter(
+                        allFoundRecipes,
+                        filterValue
+                    );
 
                     if (filteredRecipes.length === 0) {
-                        recipeResults.innerHTML = '<p class="muted">No recipes found for this cooking method.</p>';
+                        recipeResults.innerHTML =
+                            '<p class="muted">No recipes found for this cooking method.</p>';
                     } else {
                         displayRecipes(filteredRecipes);
                     }
                 } catch (error) {
                     console.error('Filter error:', error);
-                    recipeResults.innerHTML = '<p class="muted">Error filtering recipes. Please try again.</p>';
+                    recipeResults.innerHTML =
+                        '<p class="muted">Error filtering recipes. Please try again.</p>';
                 }
             });
         });
@@ -347,7 +366,6 @@ document.addEventListener('DOMContentLoaded', function () {
     async function viewRecipe(recipeId) {
         if (!recipeModal) return;
 
-        // open modal and bring user focus to top
         recipeModal.classList.add('open');
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -445,7 +463,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     async function handleGoToGroceryList() {
-        // Which recipes were checked?
         const selectedRecipeIds = Array.from(
             document.querySelectorAll(".recipe-checkbox:checked")
         ).map(cb => parseInt(cb.value));
@@ -456,12 +473,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         try {
-            // Get full details for each recipe
             const recipes = await Promise.all(
                 selectedRecipeIds.map(id => getRecipeDetails(id))
             );
 
-            // Build combined missing-ingredients list
             const combinedMissing = [];
 
             recipes.forEach(recipe => {
@@ -479,16 +494,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 alert("You already have all the ingredients for these recipes!");
             }
 
-            // Save for grocerylist.js to use
             localStorage.setItem(
                 "currentMissingIngredients",
                 JSON.stringify(combinedMissing)
             );
 
-            // Switch to Grocery List panel
             showPanel("groceryListSection");
 
-            // Auto-generate display if button exists
             const generateBtn = document.getElementById("generateListBtn");
             generateBtn?.click();
         } catch (error) {

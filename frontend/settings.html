@@ -31,38 +31,31 @@
 
       <div class="checkbox-grid" id="dietaryOptions">
         <label class="checkbox-item">
-          <input type="checkbox" value="vegetarian" />
-          Vegetarian
+          <input type="checkbox" value="vegetarian" /> Vegetarian
         </label>
         <label class="checkbox-item">
-          <input type="checkbox" value="vegan" />
-          Vegan
+          <input type="checkbox" value="vegan" /> Vegan
         </label>
         <label class="checkbox-item">
-          <input type="checkbox" value="gluten_free" />
-          Gluten-Free
+          <input type="checkbox" value="gluten_free" /> Gluten-Free
         </label>
         <label class="checkbox-item">
-          <input type="checkbox" value="dairy_free" />
-          Dairy-Free
+          <input type="checkbox" value="dairy_free" /> Dairy-Free
         </label>
         <label class="checkbox-item">
-          <input type="checkbox" value="nut_free" />
-          Nut-Free
+          <input type="checkbox" value="nut_free" /> Nut-Free
         </label>
         <label class="checkbox-item">
-          <input type="checkbox" value="halal" />
-          Halal
+          <input type="checkbox" value="halal" /> Halal
         </label>
         <label class="checkbox-item">
-          <input type="checkbox" value="kosher" />
-          Kosher
+          <input type="checkbox" value="kosher" /> Kosher
         </label>
       </div>
 
       <div class="actions between">
         <button class="btn primary" id="saveDietPrefsBtn">Save Preferences</button>
-        <span id="dietaryStatus" class="muted"></span>
+        <span id="dietaryStatus" class="muted" style="transition: opacity .3s;"></span>
     </div>
     </section>
   </main>
@@ -73,8 +66,10 @@
     </div>
   </footer>
 
+  <!-- ORDER MATTERS -->
   <script src="config.js"></script>
   <script src="auth.js"></script>
+  <script src="api.js"></script>        <!-- must come before settings.js -->
   <script src="settings.js"></script>
   <script src="onboarding.js"></script>
 </body>

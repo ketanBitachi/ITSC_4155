@@ -40,7 +40,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base, test_connection
 from .routers import auth_router, pantry_router
 from .routers import grocery_list  # import grocery list router
-from .routers import support_router, support_alias_router
+from .routers import support_router, support_alias_router, preferences_router, recipes_router
 from .config import settings
 
 # Create FastAPI app
@@ -50,11 +50,15 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configure CORS - allow frontend to communicate with backend
+origins = [
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins like ["http://localhost:3000"]
-    allow_credentials=True,
+    allow_origins=origins,      # ✅ no wildcard when using credentials
+    allow_credentials=True,     # ✅ needed because you use credentials: "include"
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -65,6 +69,8 @@ app.include_router(pantry_router)
 app.include_router(grocery_list.router)
 app.include_router(support_router)
 app.include_router(support_alias_router)
+app.include_router(preferences_router)
+app.include_router(recipes_router)
 
 
 @app.get("/")

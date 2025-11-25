@@ -1,4 +1,6 @@
-document.addEventListener('DOMContentLoaded', () => {
+// frontend/settings.js
+
+document.addEventListener('DOMContentLoaded', async () => {
   if (!checkAuthStatus()) return;
 
   document.getElementById('year').textContent = new Date().getFullYear();
@@ -16,24 +18,56 @@ document.addEventListener('DOMContentLoaded', () => {
   pantryBtn?.addEventListener('click', () => (window.location.href = 'ingredients.html'));
   dietBtn?.addEventListener('click', () => (window.location.href = 'settings.html'));
 
-  // Load saved prefs
-  const savedPrefs = JSON.parse(localStorage.getItem('dietaryPreferences') || '[]');
-  if (savedPrefs.length) {
+  function showStatus(message) {
+    if (!statusSpan) return;
+    statusSpan.textContent = message;
+    statusSpan.style.opacity = 1;
+    setTimeout(() => {
+      statusSpan.style.opacity = 0;
+      statusSpan.textContent = "";
+    }, 2500);
+  }
+
+  function getSelectedDietaryPreferences() {
+    return Array.from(
+      optionsContainer.querySelectorAll('input[type="checkbox"]:checked')
+    ).map(cb => cb.value);
+  }
+
+  function applyPreferencesToUI(preferences) {
+    const prefSet = new Set(preferences || []);
     optionsContainer
       .querySelectorAll('input[type="checkbox"]')
       .forEach(cb => {
-        if (savedPrefs.includes(cb.value)) cb.checked = true;
+        cb.checked = prefSet.has(cb.value);
       });
-    statusSpan.textContent = 'Loaded your saved preferences.';
   }
 
-  saveBtn.addEventListener('click', () => {
-    const selected = Array.from(
-      optionsContainer.querySelectorAll('input[type="checkbox"]:checked')
-    ).map(cb => cb.value);
+  // ---- LOAD FROM BACKEND ON PAGE LOAD ----
+  try {
+    const data = await getUserDietaryPreferences(); // from api.js
+    if (data && Array.isArray(data.preferences)) {
+      applyPreferencesToUI(data.preferences);
+      if (data.preferences.length > 0) {
+        showStatus("Loaded your saved preferences.");
+      }
+    }
+  } catch (err) {
+    console.error("Error loading dietary preferences:", err);
+    // No status needed here; silently fail is fine, or:
+    // showStatus("Could not load preferences.");
+  }
 
-    localStorage.setItem('dietaryPreferences', JSON.stringify(selected));
-    statusSpan.textContent = 'Preferences saved.';
-    setTimeout(() => (statusSpan.textContent = ''), 2500);
+  // ---- SAVE TO BACKEND ON CLICK ----
+  saveBtn.addEventListener('click', async () => {
+    const selected = getSelectedDietaryPreferences();
+
+    try {
+      await saveUserDietaryPreferences(selected); // from api.js
+      showStatus("Preferences saved.");
+    } catch (err) {
+      console.error("Error saving dietary preferences:", err);
+      showStatus("Error saving preferences.");
+    }
   });
 });
