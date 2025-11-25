@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from pydantic import ConfigDict
 from datetime import datetime
 
 class IngredientCreate(BaseModel):
@@ -9,5 +10,5 @@ class IngredientResponse(BaseModel):
     ingredient_name: str
     created_at: datetime
     
-    class Config:
-        orm_mode = True
+    # Pydantic v2 replacement for orm_mode=True
+    model_config = ConfigDict(from_attributes=True)
