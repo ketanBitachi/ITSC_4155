@@ -1,4 +1,5 @@
 // Authentication functions for Easy Kitchen
+// NOTE: API_BASE_URL is expected to be defined in config.js
 // const API_BASE_URL = 'http://localhost:8000';
 
 // Check if user is authenticated
@@ -9,7 +10,9 @@ function checkAuthStatus() {
     if (!token || (tokenExpiry && new Date() > new Date(tokenExpiry))) {
         localStorage.removeItem('authToken');
         localStorage.removeItem('tokenExpiry');
-        
+        // Also clear userId if token is invalid/expired
+        localStorage.removeItem('userId');
+
         if (!window.location.href.includes('login.html') && !window.location.href.includes('index.html')) {
             window.location.href = 'login.html';
         }
@@ -81,10 +84,12 @@ async function loginUser(email, password) {
         localStorage.setItem('authToken', data.access_token);
         localStorage.setItem('tokenExpiry', expiryTime.toISOString());
         
+        // Return user info including user_id so the caller can store it
         return {
             success: true,
             message: 'Login successful',
-            username: data.username
+            username: data.username,
+            user_id: data.user_id  // <-- used by settings.js via localStorage.userId
         };
     } catch (error) {
         console.error('Login error:', error);
@@ -99,6 +104,7 @@ async function loginUser(email, password) {
 function logoutUser() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('tokenExpiry');
+    localStorage.removeItem('userId'); // clear userId on logout as well
     window.location.href = 'login.html';
 }
 
@@ -111,7 +117,7 @@ function getAuthHeaders() {
     };
 }
 
-// Initialize login form handler
+// Initialize login / signup form handlers
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
@@ -126,6 +132,23 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 const result = await loginUser(form.email.value, form.password.value);
                 if (result.success) {
+                    // Store numeric userId for dietary preferences and other per-user features
+                    if (result.user_id != null) {
+                        try {
+                            localStorage.setItem('userId', String(result.user_id));
+                        } catch (_) {
+                            console.warn('Could not store userId in localStorage');
+                        }
+                    } else {
+                        console.warn('Login response did not include user_id; dietary preferences may not work.');
+                    }
+
+                    // Persist current user identifier (existing behavior)
+                    const userIdText = result.username || form.email.value;
+                    if (userIdText) {
+                        try { localStorage.setItem('currentUser', userIdText); } catch (_) {}
+                    }
+
                     window.location.href = 'ingredients.html';
                 } else {
                     errorDiv.textContent = result.message;

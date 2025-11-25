@@ -3,17 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base, test_connection
 from .routers import auth_router, pantry_router
 from .routers import grocery_list  # import grocery list router
-from .routers import favorites     # import favorites router
+from .routers import support_router, support_alias_router, preferences_router, recipes_router, favorites
 from .config import settings
-
-# Create database tables
-print("Creating database tables...")
-Base.metadata.create_all(bind=engine)
-print("✅ Database tables created successfully!")
-
-# Test database connection
-print("\nTesting database connection...")
-test_connection()
 
 # Create FastAPI app
 app = FastAPI(
@@ -22,11 +13,15 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configure CORS - allow frontend to communicate with backend
+origins = [
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins like ["http://localhost:3000"]
-    allow_credentials=True,
+    allow_origins=origins,      # ✅ no wildcard when using credentials
+    allow_credentials=True,     # ✅ needed because you use credentials: "include"
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -35,6 +30,10 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(pantry_router)
 app.include_router(grocery_list.router)
+app.include_router(support_router)
+app.include_router(support_alias_router)
+app.include_router(preferences_router)
+app.include_router(recipes_router)
 app.include_router(favorites.router)
 
 
@@ -75,6 +74,16 @@ async def startup_event():
     print(f" Auth: JWT with {settings.ACCESS_TOKEN_EXPIRE_MINUTES} min expiry")
     print(f" Documentation: http://localhost:8000/docs")
     print("="*50 + "\n")
+    # Create tables and test connection at startup (not at import time)
+    try:
+        print("Creating database tables...")
+        Base.metadata.create_all(bind=engine)
+        print("✅ Database tables created successfully!")
+    except Exception as e:
+        print(f"⚠️ Could not create tables: {e}")
+
+    print("\nTesting database connection...")
+    test_connection()
 
 # Shutdown event
 @app.on_event("shutdown")

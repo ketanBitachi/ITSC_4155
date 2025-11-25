@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let allIngredients = [];
     let selectedIngredients = new Set();
     let userSavedIngredients = [];
+    let allFoundRecipes = []; // Store all recipes for filtering
 
     // --- DOM ELEMENTS ---
     const loadIngredientsBtn = document.getElementById('loadIngredientsBtn');
@@ -24,10 +25,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const logoutBtn = document.getElementById('logoutBtn');
     const homeBtn = document.getElementById('homeBtn');
     const pantryBtn = document.getElementById('pantryBtn');
-    // Update nav element IDs to match HTML header
-    const navLogout = document.getElementById('navLogout');
-    const navHome = document.getElementById('navHome');
-    const navPantry = document.getElementById('navPantry');
+    const dietBtn = document.getElementById('dietBtn');
+
+    // make 100% sure modal is closed on load
+    recipeModal?.classList.remove('open');
 
     // --- NAVIGATION ---
     navLogout?.addEventListener('click', (e) => {
@@ -43,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
         showPanel('ingredients');
     });
     backToIngredientsBtn?.addEventListener('click', () => showPanel('ingredients'));
+    dietBtn?.addEventListener('click', () => { window.location.href = 'settings.html'; });
 
     // --- INITIAL LOAD ---
     loadUserSavedIngredients();
@@ -55,9 +57,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- MODAL HANDLING ---
     const closeModal = document.querySelector('.close-modal');
-    closeModal?.addEventListener('click', () => (recipeModal.style.display = 'none'));
+    closeModal?.addEventListener('click', () => recipeModal?.classList.remove('open'));
+
     window.addEventListener('click', (e) => {
-        if (e.target === recipeModal) recipeModal.style.display = 'none';
+        if (e.target === recipeModal) {
+            recipeModal.classList.remove('open');
+        }
     });
 
     // ==================== FUNCTIONS ====================
@@ -65,7 +70,22 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Panel Switcher ---
     function showPanel(panelId) {
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-        document.getElementById(panelId).classList.add('active');
+
+        const target = document.getElementById(panelId);
+        if (!target) return;
+        target.classList.add('active');
+
+        if (panelId !== 'recipes') {
+            recipeModal?.classList.remove('open');
+        }
+
+        if (panelId === 'groceryListSection') {
+            window.location.hash = '#groceries';
+        } else if (window.location.hash === '#groceries') {
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     // --- Load User's Saved Ingredients ---
@@ -73,7 +93,9 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             const savedIngredients = await getUserIngredients();
             userSavedIngredients = savedIngredients;
-            savedIngredients.forEach(ing => selectedIngredients.add(ing.ingredient_name.toLowerCase()));
+            savedIngredients.forEach(ing =>
+                selectedIngredients.add(ing.ingredient_name.toLowerCase())
+            );
             updateSelectedChips();
         } catch (err) {
             console.error('Failed to load saved ingredients:', err);
@@ -195,9 +217,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
             const currentSaved = await getUserIngredients();
-            const currentSavedNames = new Set(currentSaved.map(ing => ing.ingredient_name.toLowerCase()));
-            const toAdd = Array.from(selectedIngredients).filter(ing => !currentSavedNames.has(ing));
-            const toRemove = currentSaved.filter(ing => !selectedIngredients.has(ing.ingredient_name.toLowerCase()));
+            const currentSavedNames = new Set(
+                currentSaved.map(ing => ing.ingredient_name.toLowerCase())
+            );
+            const toAdd = Array.from(selectedIngredients).filter(
+                ing => !currentSavedNames.has(ing)
+            );
+            const toRemove = currentSaved.filter(
+                ing => !selectedIngredients.has(ing.ingredient_name.toLowerCase())
+            );
 
             for (const ing of toAdd) await addIngredient(ing);
             for (const ing of toRemove) await removeIngredient(ing.id);
@@ -214,42 +242,55 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // --- Find Recipes ---
-    let allFoundRecipes = []; // Store all recipes for filtering
-    
     async function findRecipes() {
         if (selectedIngredients.size === 0) {
             alert('Please select at least one ingredient first.');
             return;
         }
 
+        // move user into the Recipes panel
+        showPanel('recipes');
+
         findRecipesBtn.disabled = true;
         findRecipesBtn.textContent = 'Searching...';
-        showPanel('recipes');
         recipeResults.innerHTML = '<p class="loading">Finding recipes for you...</p>';
 
         try {
-            const recipes = await searchRecipesByIngredients(Array.from(selectedIngredients));
-            // Preload favorites to set initial heart states
+            // 1) Get the user's dietary preferences from backend
+            let prefsArray = [];
             try {
-                const favs = await getFavorites();
-                window.favoriteIds = new Set(favs.map(f => f.recipe_id));
-            } catch (_) {
-                window.favoriteIds = new Set();
+                const prefData = await getUserDietaryPreferences(); // from api.js
+                prefsArray = prefData?.preferences || [];
+                console.log("Using dietary preferences:", prefsArray);
+            } catch (err) {
+                console.warn(
+                    "Could not load dietary preferences; proceeding without filter.",
+                    err
+                );
             }
+
+            // 2) Call recipe search with ingredients + preferences array
+            const recipes = await searchRecipesByIngredients(
+                Array.from(selectedIngredients),
+                prefsArray
+            );
+
             if (!recipes.length) {
-                recipeResults.innerHTML = '<p class="muted">No recipes found. Try selecting different ingredients.</p>';
+                recipeResults.innerHTML =
+                    '<p class="muted">No recipes found. Try selecting different ingredients or changing your dietary preferences.</p>';
                 return;
             }
-            
+
             // Store all recipes for filtering
             allFoundRecipes = recipes;
-            window.allFoundRecipes = recipes; // Make available globally
-            
+            window.allFoundRecipes = recipes;
+
             displayRecipes(recipes);
-            setupCookingMethodFilters(); // Setup filter functionality
+            setupCookingMethodFilters();
         } catch (err) {
             console.error('Failed to find recipes:', err);
-            recipeResults.innerHTML = '<p class="muted">Failed to find recipes. Please try again.</p>';
+            recipeResults.innerHTML =
+                '<p class="muted">Failed to find recipes. Please try again.</p>';
         } finally {
             findRecipesBtn.disabled = false;
             findRecipesBtn.textContent = 'Find Recipes';
@@ -264,31 +305,27 @@ document.addEventListener('DOMContentLoaded', function () {
             const card = document.createElement('div');
             card.className = 'recipe-card';
 
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.value = recipe.idMeal;
-            checkbox.classList.add('recipe-checkbox');
-            checkbox.style.marginRight = '10px';
-
             const img = document.createElement('img');
             img.src = recipe.strMealThumb;
             img.alt = recipe.strMeal;
 
-            const name = document.createElement('h3');
+            const name = document.createElement('h4');
             name.textContent = recipe.strMeal;
 
             const matchInfo = document.createElement('p');
             matchInfo.className = 'muted small';
             matchInfo.textContent = `Matched: ${recipe.matchedIngredient}`;
 
-            // Add cooking method badge if available
-            if (recipe.cookingMethod) {
-                const methodBadge = document.createElement('span');
-                methodBadge.className = `cooking-method-badge ${recipe.cookingMethod}`;
-                methodBadge.textContent = recipe.cookingMethod === 'both' ? 'Oven + Stove' : 
-                                        recipe.cookingMethod.charAt(0).toUpperCase() + recipe.cookingMethod.slice(1);
-                card.appendChild(methodBadge);
-            }
+            const checkboxLabel = document.createElement('label');
+            checkboxLabel.className = 'ingredient-item';
+            checkboxLabel.style.margin = '0 16px 12px';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = recipe.idMeal;
+            checkbox.classList.add('recipe-checkbox');
+
+            checkboxLabel.append(checkbox, document.createTextNode('  Add to grocery list'));
 
             // Heart (Favorite) button
             const heartBtn = document.createElement('button');
@@ -325,16 +362,11 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             const viewBtn = document.createElement('button');
-            viewBtn.className = 'btn primary';
+            viewBtn.className = 'view-recipe-btn';
             viewBtn.textContent = 'View Recipe';
             viewBtn.addEventListener('click', () => viewRecipe(recipe.idMeal));
 
-            // Controls row: place heart to the right of the view button
-            const controls = document.createElement('div');
-            controls.className = 'card-controls';
-            controls.append(viewBtn, heartBtn);
-
-            card.append(checkbox, img, name, matchInfo, controls);
+            card.append(img, name, matchInfo, checkboxLabel, viewBtn);
             recipeResults.appendChild(card);
         });
     }
@@ -342,30 +374,32 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Setup Cooking Method Filters ---
     function setupCookingMethodFilters() {
         const filterButtons = document.querySelectorAll('.filter-btn');
-        
+
         filterButtons.forEach(button => {
             button.addEventListener('click', async (e) => {
-                // Update active button
                 filterButtons.forEach(btn => btn.classList.remove('active'));
                 e.target.classList.add('active');
-                
+
                 const filterValue = e.target.dataset.filter;
-                
-                // Show loading
+
                 recipeResults.innerHTML = '<p class="loading">Filtering recipes...</p>';
-                
+
                 try {
-                    // Apply filter
-                    const filteredRecipes = await applyCookingMethodFilter(allFoundRecipes, filterValue);
-                    
+                    const filteredRecipes = await applyCookingMethodFilter(
+                        allFoundRecipes,
+                        filterValue
+                    );
+
                     if (filteredRecipes.length === 0) {
-                        recipeResults.innerHTML = '<p class="muted">No recipes found for this cooking method.</p>';
+                        recipeResults.innerHTML =
+                            '<p class="muted">No recipes found for this cooking method.</p>';
                     } else {
                         displayRecipes(filteredRecipes);
                     }
                 } catch (error) {
                     console.error('Filter error:', error);
-                    recipeResults.innerHTML = '<p class="muted">Error filtering recipes. Please try again.</p>';
+                    recipeResults.innerHTML =
+                        '<p class="muted">Error filtering recipes. Please try again.</p>';
                 }
             });
         });
@@ -373,7 +407,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- View Recipe Modal ---
     async function viewRecipe(recipeId) {
-        recipeModal.style.display = 'block';
+        if (!recipeModal) return;
+
+        recipeModal.classList.add('open');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
         recipeDetails.innerHTML = '<p class="loading">Loading recipe details...</p>';
         try {
             const recipe = await getRecipeDetails(recipeId);
@@ -391,17 +429,32 @@ document.addEventListener('DOMContentLoaded', function () {
         const missingList = [];
 
         ingredients.forEach(ing => {
-            if (selectedIngredients.has(ing.name.toLowerCase())) haveList.push(`${ing.name} - ${ing.measure}`);
-            else missingList.push(`${ing.name} - ${ing.measure}`);
+            if (selectedIngredients.has(ing.name.toLowerCase())) {
+                haveList.push(`${ing.name} - ${ing.measure}`);
+            } else {
+                missingList.push(`${ing.name} - ${ing.measure}`);
+            }
         });
 
         const ingredientsHTML = `
-          <div class="ingredients-section">
-            <h4>✅ You Have:</h4>
-            ${haveList.length ? `<ul>${haveList.map(i => `<li>${i}</li>`).join('')}</ul>` : '<p class="muted">No matching ingredients in pantry.</p>'}
-            <h4>❌ Missing Ingredients:</h4>
-            ${missingList.length ? `<ul class="missing">${missingList.map(i => `<li>${i}</li>`).join('')}</ul>` : '<p class="muted">You have all ingredients!</p>'}
-          </div>
+            <div class="ingredients-columns">
+                <div class="ingredients-column">
+                    <h4>✅ You Have</h4>
+                    ${
+                        haveList.length
+                            ? `<ul>${haveList.map(i => `<li>${i}</li>`).join('')}</ul>`
+                            : '<p class="muted">No matching ingredients in your pantry.</p>'
+                    }
+                </div>
+                <div class="ingredients-column">
+                    <h4>❌ Missing Ingredients</h4>
+                    ${
+                        missingList.length
+                            ? `<ul>${missingList.map(i => `<li>${i}</li>`).join('')}</ul>`
+                            : '<p class="muted">You have everything you need!</p>'
+                    }
+                </div>
+            </div>
         `;
 
         const instructions = recipe.instructions.replace(/\r?\n/g, '<br>');
@@ -410,18 +463,35 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="recipe-header">
                 <img src="${recipe.thumbnail}" alt="${recipe.name}">
                 <div class="recipe-info">
+                    <p class="pill">Recipe Detail</p>
                     <h2>${recipe.name}</h2>
                     <p><strong>Category:</strong> ${recipe.category}</p>
                     <p><strong>Cuisine:</strong> ${recipe.area}</p>
-                    ${recipe.tags?.length ? `<p><strong>Tags:</strong> ${recipe.tags.join(', ')}</p>` : ''}
-                    ${recipe.youtube ? `<p><a href="${recipe.youtube}" target="_blank" class="btn outline">Watch on YouTube</a></p>` : ''}
+                    ${
+                        recipe.tags?.length
+                            ? `<p><strong>Tags:</strong> ${recipe.tags.join(', ')}</p>`
+                            : ''
+                    }
+                    ${
+                        recipe.youtube
+                            ? `<a href="${recipe.youtube}" target="_blank" class="btn outline small-btn">Watch on YouTube</a>`
+                            : ''
+                    }
                 </div>
             </div>
+
             <div class="recipe-body">
-                <h3>Ingredients</h3>
-                ${ingredientsHTML}
-                <h3>Instructions</h3>
-                <div class="instructions">${instructions}</div>
+                <section class="section-block">
+                    <h3>Ingredients</h3>
+                    ${ingredientsHTML}
+                </section>
+
+                <section class="section-block">
+                    <h3>Instructions</h3>
+                    <div class="instructions">
+                        ${instructions}
+                    </div>
+                </section>
             </div>
         `;
 
@@ -429,82 +499,65 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // --- Grocery List Navigation ---
-    document.getElementById("goToGroceryBtn")?.addEventListener("click", () => {
-        const selectedRecipeIds = Array.from(document.querySelectorAll('.recipe-checkbox:checked')).map(cb => parseInt(cb.value));
+    document.getElementById("goToGroceryBtn")?.addEventListener("click", handleGoToGroceryList);
+
+    document.getElementById("backToRecipesBtn")?.addEventListener("click", () => {
+        showPanel("recipes");
+    });
+
+    async function handleGoToGroceryList() {
+        const selectedRecipeIds = Array.from(
+            document.querySelectorAll(".recipe-checkbox:checked")
+        ).map(cb => parseInt(cb.value));
+
         if (!selectedRecipeIds.length) {
             alert("Please select at least one recipe before generating a grocery list.");
             return;
         }
-        localStorage.setItem("selectedRecipeIds", JSON.stringify(selectedRecipeIds));
-        showPanel("groceryListSection");
-    });
 
-    // --- Auto-Open Grocery List Section ---
-    if (window.location.hash === '#groceries') {
-        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-        document.getElementById('groceryListSection').classList.add('active');
-    }
-    // Nav: show Past Recipes (Favorites)
-    document.getElementById('navPastRecipes')?.addEventListener('click', async (e) => {
-        e.preventDefault();
-        showPanel('pastRecipesSection');
-        await loadFavorites();
-    });
-
-    async function loadFavorites() {
-        const container = document.getElementById('favoritesList');
-        container.innerHTML = '<p class="loading">Loading favorites...</p>';
         try {
-            const favs = await getFavorites();           // from api.js
-            window.favoriteIds = new Set(favs.map(f => f.recipe_id));
+            const recipes = await Promise.all(
+                selectedRecipeIds.map(id => getRecipeDetails(id))
+            );
 
-            if (!favs.length) {
-                container.innerHTML = '<p class="muted">No favorites yet.</p>';
-                return;
-            }
+            const combinedMissing = [];
 
-            container.innerHTML = '';
-            favs.forEach(f => {
-                const r = f.recipe_json;
-                const card = document.createElement('div');
-                card.className = 'recipe-card';
+            recipes.forEach(recipe => {
+                const ingredients = recipe.ingredients || [];
 
-                const img = document.createElement('img');
-                img.src = r.thumbnail; img.alt = r.name;
-
-                const name = document.createElement('h3');
-                name.textContent = r.name;
-
-                const viewBtn = document.createElement('button');
-                viewBtn.className = 'btn primary';
-                viewBtn.textContent = 'View Recipe';
-                viewBtn.addEventListener('click', () => viewRecipe(r.id));
-
-                const heartBtn = document.createElement('button');
-                heartBtn.className = 'heart-btn favorite';
-                heartBtn.textContent = '♥';
-                heartBtn.title = 'Remove Favorite';
-                heartBtn.addEventListener('click', async () => {
-                    heartBtn.disabled = true;
-                    try {
-                        await removeFavorite(r.id);      // from api.js
-                        window.favoriteIds.delete(r.id);
-                        await loadFavorites();
-                    } finally {
-                        heartBtn.disabled = false;
+                ingredients.forEach(ing => {
+                    const hasIt = selectedIngredients.has(ing.name.toLowerCase());
+                    if (!hasIt) {
+                        combinedMissing.push(`${ing.name} - ${ing.measure}`);
                     }
                 });
-
-                const controls = document.createElement('div');
-                controls.className = 'card-controls';
-                controls.append(viewBtn, heartBtn);
-
-                card.append(img, name, controls);
-                container.appendChild(card);
             });
-        } catch (err) {
-            console.error('Favorites load error:', err);
-            container.innerHTML = '<p class="muted">Failed to load favorites.</p>';
+
+            if (!combinedMissing.length) {
+                alert("You already have all the ingredients for these recipes!");
+            }
+
+            localStorage.setItem(
+                "currentMissingIngredients",
+                JSON.stringify(combinedMissing)
+            );
+
+            showPanel("groceryListSection");
+
+            const generateBtn = document.getElementById("generateListBtn");
+            generateBtn?.click();
+        } catch (error) {
+            console.error("Failed to build grocery list:", error);
+            alert("Sorry, something went wrong while building your grocery list.");
         }
+    }
+
+    // --- Auto-Open Grocery List Section ---
+    if (window.location.hash === "#groceries") {
+        document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+        document.getElementById("groceryListSection").classList.add("active");
+        recipeModal?.classList.remove("open");
+    } else {
+        showPanel("ingredients");
     }
 });
