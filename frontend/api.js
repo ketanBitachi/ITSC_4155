@@ -928,6 +928,35 @@ async function getRecommendedRecipes() {
 }
 
 // ---- expose functions to window for tests / non-module script usage ----
+async function getFavorites() {
+    const res = await fetch(`${API_BASE_URL}/api/favorites`, { headers: getAuthHeaders() });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed to load favorites');
+    return data;
+}
+
+async function addFavorite(recipeDetail) {
+    const res = await fetch(`${API_BASE_URL}/api/favorites/${recipeDetail.id}`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ recipe_json: recipeDetail })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed to add favorite');
+    return data;
+}
+
+async function removeFavorite(recipeId) {
+    const res = await fetch(`${API_BASE_URL}/api/favorites/${recipeId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+    });
+    if (!res.ok && res.status !== 204) {
+        const data = await res.json();
+        throw new Error(data.detail || 'Failed to remove favorite');
+    }
+    return true;
+}
 if (typeof window !== "undefined") {
   window.getUserIngredients = getUserIngredients;
   window.addIngredient = addIngredient;
@@ -948,4 +977,8 @@ if (typeof window !== "undefined") {
 
   window.isRecipeAllowedForPreferences = isRecipeAllowedForPreferences;
   window.isRecipeNameAllowedForPreferences = isRecipeNameAllowedForPreferences;
+
+  window.getFavorites = getFavorites;
+  window.addFavorite = addFavorite;
+  window.removeFavorite = removeFavorite;
 }

@@ -1,46 +1,9 @@
-# from fastapi import FastAPI
-# from fastapi.middleware.cors import CORSMiddleware
-# from .database import engine, Base
-# from .routers import auth_router, pantry_router
-
-# # Create database tables
-# Base.metadata.create_all(bind=engine)
-
-# # Create FastAPI app
-# app = FastAPI(
-#     title="Easy Kitchen API",
-#     description="API for Easy Kitchen meal planning application",
-#     version="1.0.0"
-# )
-
-# # Configure CORS
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],  # In production, replace with specific origins
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-
-# # Include routers
-# app.include_router(auth_router)
-# app.include_router(pantry_router)
-
-# @app.get("/")
-# def read_root():
-#     return {"message": "Welcome to Easy Kitchen API"}
-
-# @app.get("/health")
-# def health_check():
-#     return {"status": "healthy"}
-
-# new.env
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base, test_connection
 from .routers import auth_router, pantry_router
 from .routers import grocery_list  # import grocery list router
-from .routers import support_router, support_alias_router, preferences_router, recipes_router
+from .routers import support_router, support_alias_router, preferences_router, recipes_router, favorites
 from .config import settings
 
 # Create FastAPI app
@@ -71,6 +34,7 @@ app.include_router(support_router)
 app.include_router(support_alias_router)
 app.include_router(preferences_router)
 app.include_router(recipes_router)
+app.include_router(favorites.router)
 
 
 @app.get("/")

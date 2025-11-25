@@ -31,9 +31,18 @@ document.addEventListener('DOMContentLoaded', function () {
     recipeModal?.classList.remove('open');
 
     // --- NAVIGATION ---
-    logoutBtn?.addEventListener('click', logoutUser);
-    homeBtn?.addEventListener('click', () => (window.location.href = 'index.html'));
-    pantryBtn?.addEventListener('click', () => showPanel('ingredients'));
+    navLogout?.addEventListener('click', (e) => {
+        e.preventDefault();
+        logoutUser();
+    });
+    navHome?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = 'index.html';
+    });
+    navPantry?.addEventListener('click', (e) => {
+        e.preventDefault();
+        showPanel('ingredients');
+    });
     backToIngredientsBtn?.addEventListener('click', () => showPanel('ingredients'));
     dietBtn?.addEventListener('click', () => { window.location.href = 'settings.html'; });
 
@@ -317,6 +326,40 @@ document.addEventListener('DOMContentLoaded', function () {
             checkbox.classList.add('recipe-checkbox');
 
             checkboxLabel.append(checkbox, document.createTextNode('  Add to grocery list'));
+
+            // Heart (Favorite) button
+            const heartBtn = document.createElement('button');
+            heartBtn.className = 'heart-btn';
+            heartBtn.setAttribute('aria-label', 'Toggle Favorite');
+            heartBtn.title = 'Save to Favorites';
+
+            const isFav = window.favoriteIds?.has?.(recipe.idMeal);
+            if (isFav) heartBtn.classList.add('favorite');
+            heartBtn.textContent = isFav ? '♥' : '♡';
+
+            heartBtn.addEventListener('click', async () => {
+                heartBtn.disabled = true;
+                try {
+                    if (heartBtn.classList.contains('favorite')) {
+                        await removeFavorite(recipe.idMeal);
+                        heartBtn.classList.remove('favorite');
+                        heartBtn.textContent = '♡';
+                        window.favoriteIds?.delete?.(recipe.idMeal);
+                    } else {
+                        const detail = await getRecipeDetails(recipe.idMeal);
+                        await addFavorite(detail);
+                        heartBtn.classList.add('favorite');
+                        heartBtn.textContent = '♥';
+                        if (!window.favoriteIds) window.favoriteIds = new Set();
+                        window.favoriteIds.add(recipe.idMeal);
+                    }
+                } catch (e) {
+                    console.error('Favorite toggle failed:', e);
+                    alert('Could not update favorite. Please try again.');
+                } finally {
+                    heartBtn.disabled = false;
+                }
+            });
 
             const viewBtn = document.createElement('button');
             viewBtn.className = 'view-recipe-btn';

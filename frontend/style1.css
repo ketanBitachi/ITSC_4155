@@ -49,16 +49,13 @@ p.subtitle {
   border-bottom: 1px solid var(--border);
   box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
-
 .brand {
   font-size: 24px;
   font-weight: 700;
 }
-
 .brand span {
   color: var(--primary);
 }
-
 .top-nav {
   display: flex;
   gap: 16px;
@@ -74,10 +71,10 @@ p.subtitle {
   font-size: 15px;
   transition: color 0.2s;
 }
-
 .top-nav .link:hover {
   color: var(--primary);
 }
+
 
 .site-footer {
   text-align: center;
@@ -516,7 +513,7 @@ p.subtitle {
   background-color: #f3f4f6;
   color: #6b7280;
 }
-
+z
 .checkbox-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
