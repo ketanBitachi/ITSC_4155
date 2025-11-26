@@ -306,6 +306,31 @@ p.subtitle {
   background: var(--primary-600);
 }
 
+/* Heart/Favorite Button */
+.heart-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  transition: transform 0.2s ease;
+  color: #ccc;
+  margin: 0 16px 12px;
+}
+
+.heart-btn:hover {
+  transform: scale(1.1);
+}
+
+.heart-btn.favorite {
+  color: #ff4444;
+}
+
+.heart-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* ===============================
    Recipe Modal
    =============================== */

@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const homeBtn = document.getElementById('homeBtn');
     const pantryBtn = document.getElementById('pantryBtn');
     const dietBtn = document.getElementById('dietBtn');
+    const favoritesBtn = document.getElementById('favoritesBtn');
     const clearFiltersBtn = document.getElementById("clearFiltersBtn");
 
     // === PART 4: Restore persistence on page load ===
@@ -50,6 +51,11 @@ document.addEventListener('DOMContentLoaded', function () {
     pantryBtn?.addEventListener('click', (e) => {
         e.preventDefault();
         showPanel('ingredients');
+    });
+    favoritesBtn?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        showPanel('pastRecipesSection');
+        await loadFavorites();
     });
     backToIngredientsBtn?.addEventListener('click', () => showPanel('ingredients'));
     dietBtn?.addEventListener('click', () => { window.location.href = 'settings.html'; });
@@ -376,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function () {
             viewBtn.textContent = 'View Recipe';
             viewBtn.addEventListener('click', () => viewRecipe(recipe.idMeal));
 
-            card.append(img, name, matchInfo, checkboxLabel, viewBtn);
+            card.append(img, name, matchInfo, checkboxLabel, heartBtn, viewBtn);
             recipeResults.appendChild(card);
         });
     }
