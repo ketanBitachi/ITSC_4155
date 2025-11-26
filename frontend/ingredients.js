@@ -57,11 +57,94 @@ document.addEventListener('DOMContentLoaded', function () {
         showPanel('pastRecipesSection');
         await loadFavorites();
     });
+
+    async function loadFavorites() {
+        const container = document.getElementById('favoritesList');
+        if (!container) return;
+        container.innerHTML = '<p class="loading">Loading favorites...</p>';
+        try {
+            let favs = await getFavorites();           // from api.js
+            window.favoriteIds = new Set(favs.map(f => f.recipe_id));
+
+            // Fallback to local cache if server returns empty
+            if (!favs.length) {
+                try {
+                    const cache = JSON.parse(localStorage.getItem('favoriteCache') || '[]');
+                    if (Array.isArray(cache) && cache.length) {
+                        favs = cache.map(r => ({ recipe_id: r.id || r.idMeal, recipe_json: r }));
+                        window.favoriteIds = new Set(cache.map(r => r.id || r.idMeal));
+                    }
+                } catch (_) {}
+            }
+
+            if (!favs.length) {
+                container.innerHTML = '<p class="muted">No favorites yet.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            favs.forEach(f => {
+                const data = f.recipe_json || f;
+                let recipe = data;
+                if (typeof data === 'string') {
+                    try { recipe = JSON.parse(data); } catch (_) { recipe = {}; }
+                }
+
+                const card = document.createElement('div');
+                card.className = 'recipe-card';
+
+                const img = document.createElement('img');
+                img.src = recipe.thumbnail || recipe.strMealThumb || '';
+                img.alt = recipe.name || recipe.strMeal || 'Favorite';
+
+                const name = document.createElement('h4');
+                name.textContent = recipe.name || recipe.strMeal || 'Recipe';
+
+                const heartBtn = document.createElement('button');
+                heartBtn.className = 'heart-btn favorite';
+                heartBtn.textContent = '♥';
+                heartBtn.title = 'Remove Favorite';
+                heartBtn.addEventListener('click', async () => {
+                    heartBtn.disabled = true;
+                    try {
+                        const id = f.recipe_id || recipe.id || recipe.idMeal;
+                        await removeFavorite(id);
+                        window.favoriteIds?.delete?.(id);
+                        try {
+                            const cache = JSON.parse(localStorage.getItem('favoriteCache') || '[]').filter(r => (r.id || r.idMeal) !== id);
+                            localStorage.setItem('favoriteCache', JSON.stringify(cache));
+                        } catch (_) {}
+                        await loadFavorites();
+                    } catch (err) {
+                        console.error('Failed to remove favorite:', err);
+                        alert('Could not remove favorite. Please try again.');
+                    } finally {
+                        heartBtn.disabled = false;
+                    }
+                });
+
+                const viewBtn = document.createElement('button');
+                viewBtn.className = 'view-recipe-btn';
+                viewBtn.textContent = 'View Recipe';
+                viewBtn.addEventListener('click', () => {
+                    const id = recipe.id || recipe.idMeal || f.recipe_id;
+                    viewRecipe(id);
+                });
+
+                card.append(img, name, heartBtn, viewBtn);
+                container.appendChild(card);
+            });
+        } catch (err) {
+            console.error('Failed to load favorites:', err);
+            container.innerHTML = '<p class="muted">Could not load favorites.</p>';
+        }
+    }
     backToIngredientsBtn?.addEventListener('click', () => showPanel('ingredients'));
     dietBtn?.addEventListener('click', () => { window.location.href = 'settings.html'; });
 
     // --- INITIAL LOAD ---
     loadUserSavedIngredients();
+    preloadFavoritesIds();
 
     // --- EVENT LISTENERS ---
     loadIngredientsBtn.addEventListener('click', loadAllIngredients);
@@ -102,6 +185,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    async function preloadFavoritesIds() {
+        try {
+            const favs = await getFavorites();
+            window.favoriteIds = new Set(favs.map(f => f.recipe_id));
+            try { localStorage.setItem('favoriteIds', JSON.stringify(Array.from(window.favoriteIds))); } catch (_) {}
+        } catch (_) {
+            window.favoriteIds = new Set();
+        }
     }
 
     // --- Load User's Saved Ingredients ---
@@ -361,6 +454,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         heartBtn.classList.remove('favorite');
                         heartBtn.textContent = '♡';
                         window.favoriteIds?.delete?.(recipe.idMeal);
+                        try {
+                            const cache = JSON.parse(localStorage.getItem('favoriteCache') || '[]').filter(r => (r.id || r.idMeal) !== recipe.idMeal);
+                            localStorage.setItem('favoriteCache', JSON.stringify(cache));
+                        } catch (_) {}
                     } else {
                         const detail = await getRecipeDetails(recipe.idMeal);
                         await addFavorite(detail);
@@ -368,6 +465,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         heartBtn.textContent = '♥';
                         if (!window.favoriteIds) window.favoriteIds = new Set();
                         window.favoriteIds.add(recipe.idMeal);
+                        try {
+                            const cache = JSON.parse(localStorage.getItem('favoriteCache') || '[]');
+                            const detailId = detail.id || detail.idMeal;
+                            if (!cache.find(r => (r.id || r.idMeal) === detailId)) {
+                                cache.push(detail);
+                                localStorage.setItem('favoriteCache', JSON.stringify(cache));
+                            }
+                        } catch (_) {}
                     }
                 } catch (e) {
                     console.error('Favorite toggle failed:', e);
