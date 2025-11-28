@@ -16,6 +16,18 @@
       text: "Use your pantry to find matching recipes.",
     },
     {
+      id: "heart",
+      selector: ".heart-btn",
+      title: "Like Recipes",
+      text: "Click the heart on a recipe to save it to Favorites.",
+    },
+    {
+      id: "favorites",
+      selector: "#favoritesBtn",
+      title: "Favorites",
+      text: "Open your saved recipes from the Favorites section.",
+    },
+    {
       id: "grocery",
       selector: "#goToGroceryBtn",
       title: "Grocery List",
@@ -93,17 +105,39 @@
     state.tipEl.style.left = `${rightSpace < 340 ? Math.max(left - 20, scrollX + 8) : left}px`;
   }
 
-  function renderStep() {
+  // Helper: wait for an element to appear within a timeout
+  function waitForSelector(selector, { timeout = 10000, interval = 250 } = {}) {
+    return new Promise((resolve) => {
+      const start = Date.now();
+      const poll = () => {
+        const el = document.querySelector(selector);
+        if (el) return resolve(el);
+        if (Date.now() - start >= timeout) return resolve(null);
+        setTimeout(poll, interval);
+      };
+      poll();
+    });
+  }
+
+  async function renderStep() {
     const step = steps[state.currentStep];
     if (!step) {
       completeTour();
       return;
     }
-    const target = document.querySelector(step.selector);
+    let target = document.querySelector(step.selector);
     if (!target) {
-      // Missing element: skip to next
-      nextStep();
-      return;
+      if (step.id === "heart") {
+        document.getElementById("findRecipesBtn")?.click();
+        target = await waitForSelector(".heart-btn", { timeout: 10000, interval: 300 });
+        if (!target) { nextStep(); return; }
+      } else if (step.id === "favorites") {
+        target = await waitForSelector("#favoritesBtn", { timeout: 1500, interval: 150 });
+        if (!target) { nextStep(); return; }
+      } else {
+        nextStep();
+        return;
+      }
     }
     ensureVisible(target);
     document.documentElement.setAttribute("data-onboarding-active", "true");
@@ -214,10 +248,13 @@
     modal.setAttribute("role", "dialog");
     modal.setAttribute("aria-modal", "true");
     modal.setAttribute("aria-labelledby", "onboarding-welcome-title");
+    const stepTitles = (Array.isArray(steps) ? steps.map(s => s.title) : [
+      "My Pantry","Find Recipes","Like Recipes","Favorites","Grocery List","Dietary"
+    ]).join(" → ");
     modal.innerHTML = `
       <div class="modal-content">
         <h3 id="onboarding-welcome-title">Welcome to Easy Kitchen</h3>
-        <p>We\'ll give you a quick tour: Pantry → Recipes → Grocery → Dietary.</p>
+        <p>We\'ll give you a quick tour: ${stepTitles}.</p>
         <div class="actions">
           <button type="button" class="onboarding-btn" data-act="skip">Skip</button>
           <button type="button" class="onboarding-btn primary" data-act="start">Let\'s Go</button>
