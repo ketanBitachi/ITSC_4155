@@ -875,8 +875,13 @@ async function getUserDietaryPreferences() {
     credentials: "include",
   });
 
+  // In tests, fetch may be a loose mock; treat missing responses as "no prefs".
+  if (!response) {
+    return { preferences: [] };
+  }
+
   if (!response.ok) {
-    const text = await response.text();
+    const text = typeof response.text === "function" ? await response.text() : "";
     console.error("getUserDietaryPreferences failed:", response.status, text);
     throw new Error(
       `Failed to load dietary preferences (status ${response.status})`

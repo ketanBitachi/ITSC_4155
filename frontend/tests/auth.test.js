@@ -1,9 +1,14 @@
+// tests/auth.test.js
 const path = require("path");
 
 describe("auth.js", () => {
   beforeAll(() => {
-    // load file once so functions attach to global scope
     require(path.join(process.cwd(), "auth.js"));
+  });
+
+  beforeEach(() => {
+    fetch.mockReset();
+    localStorage.clear();
   });
 
   test("getAuthHeaders returns Bearer token", () => {
@@ -19,6 +24,7 @@ describe("auth.js", () => {
     const past = new Date(Date.now() - 60_000).toISOString();
     localStorage.setItem("tokenExpiry", past);
     location.href = "http://localhost/ingredients.html";
+
     const result = global.checkAuthStatus();
     expect(result).toBe(false);
     expect(localStorage.getItem("authToken")).toBe(null);
@@ -30,6 +36,7 @@ describe("auth.js", () => {
     localStorage.setItem("authToken", "tkn");
     localStorage.setItem("tokenExpiry", future);
     location.href = "http://localhost/ingredients.html";
+
     expect(global.checkAuthStatus()).toBe(true);
   });
 
@@ -38,9 +45,11 @@ describe("auth.js", () => {
       ok: true,
       json: async () => ({ id: 1 })
     });
+
     const out = await global.registerUser("archita", "a@b.com", "pw");
+
     expect(fetch).toHaveBeenCalledWith(
-      `${API_BASE_URL}/api/register`,
+      `${global.API_BASE_URL}/api/register`,
       expect.objectContaining({ method: "POST" })
     );
     expect(out.success).toBe(true);
@@ -51,6 +60,7 @@ describe("auth.js", () => {
       ok: true,
       json: async () => ({ access_token: "xyz", username: "archita" })
     });
+
     const res = await global.loginUser("a@b.com", "pw");
     expect(res.success).toBe(true);
     expect(localStorage.getItem("authToken")).toBe("xyz");
@@ -61,7 +71,9 @@ describe("auth.js", () => {
     localStorage.setItem("authToken", "x");
     localStorage.setItem("tokenExpiry", "y");
     location.href = "http://localhost/ingredients.html";
+
     global.logoutUser();
+
     expect(localStorage.getItem("authToken")).toBeNull();
     expect(location.href.endsWith("login.html")).toBe(true);
   });

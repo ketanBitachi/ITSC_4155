@@ -27,3 +27,12 @@ Object.defineProperty(global, "location", { value: mockLocation, writable: true,
 // Fetch + alert stubs (tests will mock fetch responses)
 global.fetch = jest.fn();
 global.alert = jest.fn();
+
+// ---- DOM helpers that jsdom doesn't implement ----
+// scrollIntoView is used in ingredients.js and onboarding.js;
+// provide a no-op so tests don't crash.
+if (typeof window !== "undefined" && window.HTMLElement) {
+  if (!window.HTMLElement.prototype.scrollIntoView) {
+    window.HTMLElement.prototype.scrollIntoView = jest.fn();
+  }
+}

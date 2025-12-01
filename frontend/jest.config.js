@@ -1,3 +1,4 @@
+// jest.config.js
 const path = require("path");
 
 module.exports = {
@@ -7,7 +8,9 @@ module.exports = {
   collectCoverageFrom: [
     "**/*.js",
     "!**/node_modules/**",
-    "!**/tests/**",      // keeps test files out of coverage
+    "!**/tests/**",
+    "!jest.config.js",
+    "!jest.setup.*.js",
     "!config.example.js"
   ],
   coverageDirectory: path.resolve(__dirname, "coverage"),

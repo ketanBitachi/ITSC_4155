@@ -1,11 +1,16 @@
+// tests/api.test.js
 const path = require("path");
 
 describe("api.js", () => {
   beforeAll(() => {
     // auth helpers used by pantry functions
     require(path.join(process.cwd(), "auth.js"));
-    // load api
+    // load api (attaches functions on global)
     require(path.join(process.cwd(), "api.js"));
+  });
+
+  beforeEach(() => {
+    fetch.mockReset();
   });
 
   test("getAllIngredientsFromMealDB returns mapped ingredients", async () => {
@@ -15,38 +20,56 @@ describe("api.js", () => {
         meals: [{ strIngredient: "Apple" }, { strIngredient: "Banana" }]
       })
     });
+
     const res = await global.getAllIngredientsFromMealDB();
     expect(res).toEqual(["Apple", "Banana"]);
   });
 
   test("searchRecipesByIngredients merges and de-dupes by idMeal", async () => {
-    // two ingredients return overlapping meals
     fetch
-      .mockResolvedValueOnce({ json: async () => ({ meals: [{ idMeal: "1", strMeal: "A", strMealThumb: "t" }] }) })
-      .mockResolvedValueOnce({ json: async () => ({ meals: [{ idMeal: "1", strMeal: "A", strMealThumb: "t" }, { idMeal: "2", strMeal: "B", strMealThumb: "t" }] }) });
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          meals: [{ idMeal: "1", strMeal: "A", strMealThumb: "t" }]
+        })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          meals: [
+            { idMeal: "1", strMeal: "A", strMealThumb: "t" },
+            { idMeal: "2", strMeal: "B", strMealThumb: "t" }
+          ]
+        })
+      });
 
     const res = await global.searchRecipesByIngredients(["chicken", "rice"]);
     expect(res.map(r => r.idMeal)).toEqual(["1", "2"]);
-    // matchedIngredient was set at least on some record
     expect(res[0].matchedIngredient).toBeDefined();
   });
 
   test("getRecipeDetails formats ingredients + meta", async () => {
     fetch.mockResolvedValueOnce({
+      ok: true,
       json: async () => ({
-        meals: [{
-          idMeal: "5",
-          strMeal: "Dish",
-          strCategory: "Cat",
-          strArea: "Area",
-          strInstructions: "Step1\nStep2",
-          strMealThumb: "img",
-          strTags: "Quick,Dinner",
-          strYoutube: "y",
-          strIngredient1: "Salt", strMeasure1: "1 tsp",
-          strIngredient2: "Pepper", strMeasure2: "1/2 tsp",
-          strIngredient3: "", strMeasure3: ""
-        }]
+        meals: [
+          {
+            idMeal: "5",
+            strMeal: "Dish",
+            strCategory: "Cat",
+            strArea: "Area",
+            strInstructions: "Step1\nStep2",
+            strMealThumb: "img",
+            strTags: "Quick,Dinner",
+            strYoutube: "y",
+            strIngredient1: "Salt",
+            strMeasure1: "1 tsp",
+            strIngredient2: "Pepper",
+            strMeasure2: "1/2 tsp",
+            strIngredient3: "",
+            strMeasure3: ""
+          }
+        ]
       })
     });
 
@@ -58,10 +81,21 @@ describe("api.js", () => {
 
   test("Pantry API functions pass auth headers and payloads", async () => {
     localStorage.setItem("authToken", "tok");
+
     fetch
-      .mockResolvedValueOnce({ ok: true, json: async () => ([{ id: 1, ingredient_name: "Apple" }]) }) // get
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ id: 2, ingredient_name: "Milk" }) })   // add
-      .mockResolvedValueOnce({ ok: true, status: 204, json: async () => ({}) });                      // delete
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{ id: 1, ingredient_name: "Apple" }]
+      }) // get
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 2, ingredient_name: "Milk" })
+      }) // add
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 204,
+        json: async () => ({})
+      }); // delete
 
     const list = await global.getUserIngredients();
     expect(list[0].ingredient_name).toBe("Apple");

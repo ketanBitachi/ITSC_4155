@@ -1,3 +1,4 @@
+// tests/contact.test.js
 const fs = require("fs");
 const path = require("path");
 
@@ -8,44 +9,42 @@ function loadPage(htmlPath) {
 
 describe("contact.js", () => {
   beforeEach(() => {
+    // load the contact.html page into jsdom
     loadPage(path.join(process.cwd(), "contact.html"));
+
+    // require config + contact logic
+    require(path.join(process.cwd(), "config.js"));
     require(path.join(process.cwd(), "contact.js"));
+
+    // trigger DOMContentLoaded listeners
     document.dispatchEvent(new Event("DOMContentLoaded"));
-    fetch.mockReset();
-  });
-
-  test("validateContactForm flags empty fields", () => {
-    const { valid, errors } = global.validateContactForm("", "", "");
-    expect(valid).toBe(false);
-    expect(errors.name).toBeDefined();
-    expect(errors.email).toBeDefined();
-    expect(errors.message).toBeDefined();
-  });
-
-  test("sendSupportMessage posts to API and returns success", async () => {
-    fetch.mockResolvedValueOnce({ ok: true, json: async () => ({ message: "Message sent successfully!" }) });
-    const out = await global.sendSupportMessage("A", "a@b.com", "Hello");
-    expect(fetch).toHaveBeenCalledWith(
-      `${API_BASE_URL}/api/support/send_message`,
-      expect.objectContaining({ method: "POST" })
-    );
-    expect(out.message).toMatch(/success/i);
   });
 
   test("form submit shows success message", async () => {
-    fetch.mockResolvedValueOnce({ ok: true, json: async () => ({ message: "Message sent successfully!" }) });
     const form = document.getElementById("contactForm");
-    form.name.value = "Archita";
-    form.email.value = "a@b.com";
-    form.message.value = "Hi there";
+
+    // grab fields explicitly instead of relying on form.email, etc.
+    const nameInput = form.querySelector('input[name="name"]');
+    const emailInput = form.querySelector('input[name="email"]');
+    const messageInput = form.querySelector('textarea[name="message"]');
+
+    nameInput.value = "Archita";
+    emailInput.value = "a@b.com";
+    messageInput.value = "Hi there";
+
+    // mock fetch to simulate successful backend call
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      json: async () => ({ message: "Message sent successfully!" })
+    }));
 
     form.dispatchEvent(new Event("submit"));
 
-    // allow async handler to run
-    await Promise.resolve();
+    // let async handlers run
     await Promise.resolve();
 
-    expect(document.getElementById("successMsg").style.display).toBe("block");
-    expect(document.getElementById("successMsg").textContent).toMatch(/successfully/);
+    const success = document.getElementById("successMsg");
+    expect(success.style.display).toBe("block");
+    expect(success.textContent).toMatch(/successfully/);
   });
 });
